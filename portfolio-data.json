@@ -1,5 +1,6 @@
 {
-  "lastUpdate": "2026-03-10",
+  "lastUpdate": "2026-03-11",
+  "lastSync": "00:05",
   "funds": [
     { "name": "嘉实新能源新材料股票A", "code": "003984", "marketValue": 46090.54, "dailyPnL": 859.37, "holdingPnL": 20385.88, "returnRate": 79.31, "category": "新能源", "market": "A股" },
     { "name": "华夏人工智能ETF联接D", "code": "008586", "marketValue": 22473.41, "dailyPnL": 432.15, "holdingPnL": 8473.41, "returnRate": 60.52, "category": "科技", "market": "A股" },
@@ -16,5 +17,14 @@
     { "name": "电网设备", "code": "601669", "marketValue": 11421.00, "shares": 5400, "price": 2.115, "cost": 1.881, "holdingPnL": 1261.80, "returnRate": 12.44, "category": "基建", "market": "A股" },
     { "name": "中科曙光", "code": "603019", "marketValue": 8819.00, "shares": 100, "price": 88.19, "cost": 165.432, "holdingPnL": -7724.15, "returnRate": -46.69, "category": "科技", "market": "A股" },
     { "name": "洛阳钼业", "code": "603993", "marketValue": 6522.00, "shares": 300, "price": 21.74, "cost": -20.514, "holdingPnL": 12676.30, "returnRate": 0, "category": "有色", "market": "A股" }
-  ]
+  ],
+  "summary": {
+    "totalAssets": 394589.49,
+    "fundValue": 164967.49,
+    "stockValue": 229622.00,
+    "dailyPnL": 1512.86,
+    "totalPnL": 24104.66,
+    "dailyReturn": 0.38,
+    "totalReturn": 6.11
+  }
 }
