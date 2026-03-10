@@ -152,7 +152,7 @@
         // ============================================
         // 配置与数据
         // ============================================
-        const APP_VERSION = '5.2.0';
+        const APP_VERSION = '5.4.0';
         
         // 真实历史数据（从2026年1月1日开始）
         const historicalData = {
@@ -529,19 +529,135 @@
         function syncData() {
             // 显示同步选项弹窗
             const options = [
-                '📊 抓取实时行情（测试）',
-                '🔔 发送飞书通知（测试）',
-                '⚙️ 配置飞书 Webhook',
-                '☁️ 云端同步（开发中）'
+                '📊 抓取实时行情',
+                '🔔 发送飞书通知',
+                '📤 导出 CSV 数据',
+                '📥 导入 CSV 数据',
+                '⚙️ 配置飞书 Webhook'
             ];
-            const choice = prompt('选择同步操作（输入序号 1-4）：\n\n' + options.map((o, i) => `${i+1}. ${o}`).join('\n'));
+            const choice = prompt('选择同步操作（输入序号 1-5）：\n\n' + options.map((o, i) => `${i+1}. ${o}`).join('\n'));
             
             switch(choice) {
                 case '1': fetchRealTimeQuotes(); break;
                 case '2': sendFeishuTest(); break;
-                case '3': setupFeishuWebhook(); break;
-                case '4': alert('云端同步功能开发中，预计 v6.0 上线'); break;
+                case '3': exportToCSV(); break;
+                case '4': importFromCSV(); break;
+                case '5': setupFeishuWebhook(); break;
             }
+        }
+        
+        // ============================================
+        // CSV 导入/导出功能
+        // ============================================
+        function exportToCSV() {
+            // 导出持仓明细
+            let csv = '类型,名称,代码,持股/份额,成本价,现价,市值,累计盈亏,盈亏率\n';
+            
+            // 股票
+            portfolioData.stocks.forEach(s => {
+                const costPrice = (s.marketValue - s.totalPnL) / s.shares;
+                const profitRate = (s.totalPnL / (s.marketValue - s.totalPnL) * 100).toFixed(2);
+                csv += `股票,${s.name},${s.code},${s.shares},${costPrice.toFixed(2)},${s.price},${s.marketValue.toFixed(2)},${s.totalPnL.toFixed(2)},${profitRate}%\n`;
+            });
+            
+            // 基金
+            portfolioData.funds.forEach(f => {
+                const shares = (f.marketValue / (f.marketValue - f.totalPnL)).toFixed(2);
+                const costPrice = f.marketValue - f.totalPnL > 0 ? (f.marketValue - f.totalPnL) / shares : 1;
+                const profitRate = f.totalPnL !== 0 ? (f.totalPnL / (f.marketValue - f.totalPnL) * 100).toFixed(2) : 0;
+                csv += `基金,${f.name},${f.code},${shares},${costPrice.toFixed(2)},- ,${f.marketValue.toFixed(2)},${f.totalPnL.toFixed(2)},${profitRate}%\n`;
+            });
+            
+            // 导出资产快照
+            csv += '\n日期,总资产,今日盈亏,累计盈亏\n';
+            csv += `${portfolioData.date},${portfolioData.totalAssets},${portfolioData.dailyPnL},${portfolioData.totalPnL}\n`;
+            
+            // 下载文件
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `持仓数据_${portfolioData.date}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('✅ CSV 导出成功！\n\n可上传到飞书多维表格进行云端备份');
+        }
+        
+        function importFromCSV() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        parseCSVAndImport(event.target.result);
+                    } catch (err) {
+                        alert('导入失败：' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+        
+        function parseCSVAndImport(csvText) {
+            const lines = csvText.split('\n').filter(l => l.trim());
+            const dataStart = lines.findIndex(l => l.startsWith('类型'));
+            const snapshotStart = lines.findIndex(l => l.startsWith('日期'));
+            
+            if (dataStart === -1) {
+                throw new Error('CSV 格式不正确');
+            }
+            
+            // 解析持仓数据
+            const newStocks = [];
+            const newFunds = [];
+            
+            for (let i = dataStart + 1; i < snapshotStart; i++) {
+                const cols = lines[i].split(',');
+                if (cols.length < 9) continue;
+                
+                const type = cols[0];
+                const name = cols[1];
+                const code = cols[2];
+                const shares = parseFloat(cols[3]);
+                const price = parseFloat(cols[5]) || 0;
+                const marketValue = parseFloat(cols[6]);
+                const totalPnL = parseFloat(cols[7]);
+                
+                if (type === '股票') {
+                    newStocks.push({ name, code, shares, price, marketValue, dailyChange: 0, totalPnL });
+                } else if (type === '基金') {
+                    newFunds.push({ name, code, marketValue, dailyPnL: 0, totalPnL });
+                }
+            }
+            
+            // 解析资产快照
+            if (snapshotStart !== -1 && lines[snapshotStart + 1]) {
+                const snapshot = lines[snapshotStart + 1].split(',');
+                portfolioData.date = snapshot[0] || new Date().toISOString().split('T')[0];
+                portfolioData.totalAssets = parseFloat(snapshot[1]) || 0;
+                portfolioData.dailyPnL = parseFloat(snapshot[2]) || 0;
+                portfolioData.totalPnL = parseFloat(snapshot[3]) || 0;
+            }
+            
+            if (newStocks.length > 0) portfolioData.stocks = newStocks;
+            if (newFunds.length > 0) portfolioData.funds = newFunds;
+            
+            // 重新渲染
+            renderData();
+            renderStocksTab();
+            renderPerformanceChart();
+            
+            // 保存到本地存储
+            localStorage.setItem('portfolio_data', JSON.stringify(portfolioData));
+            
+            alert(`✅ 导入成功！\n股票: ${newStocks.length} 条\n基金: ${newFunds.length} 条\n日期: ${portfolioData.date}`);
         }
         
         // ============================================
