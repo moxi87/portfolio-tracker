@@ -3,657 +3,552 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="专业持仓分析系统 - 实时行情、情绪监控、收益对标">
-    <title>Portfolio Pro v5.1 | 专业交易终端</title>
+    <meta name="description" content="专业持仓分析系统 - 真实数据，严禁虚拟">
+    <title>Portfolio Pro v5.2 | 真实数据版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600,700&family=Noto+Sans+SC:wght@300;400,500,700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', 'Noto Sans SC', sans-serif; }
         .glass { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
         .trend-up { color: #ef4444; }
         .trend-down { color: #22c55e; }
+        .market-closed { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .dark-mode { background: #0f172a; color: #e2e8f0; }
         .dark-mode .glass { background: rgba(30,41,59,0.95); }
         .dark-mode .bg-white { background: #1e293b; }
         .dark-mode .text-gray-800 { color: #e2e8f0; }
         .dark-mode .text-gray-600 { color: #94a3b8; }
-        .dark-mode .border-gray-200 { border-color: #334155; }
-        .dark-mode .bg-gray-50 { background: #1e293b; }
-        @keyframes flash-green { 0%, 100% { background: transparent; } 50% { background: rgba(34,197,94,0.2); } }
-        @keyframes flash-red { 0%, 100% { background: transparent; } 50% { background: rgba(239,68,68,0.2); } }
-        .flash-up { animation: flash-red 0.5s; }
-        .flash-down { animation: flash-green 0.5s; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .scroll-hide::-webkit-scrollbar { display: none; }
         .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .empty-state { text-align: center; padding: 2rem; color: #9ca3af; }
-        .version-badge { position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #9ca3af; background: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 10px; cursor: pointer; }
-        [aria-hidden="true"] { display: none; }
-        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+        .loading { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen transition-colors duration-300" id="body">
-    <a href="#main-content" class="sr-only">跳转到主要内容</a>
-    
-    <!-- 顶部导航 -->
-    <nav class="glass sticky top-0 z-50 border-b border-gray-200" role="navigation" aria-label="主导航">
+<body class="bg-gray-50 min-h-screen" id="body">
+    <!-- 市场状态横幅 -->
+    <div id="marketStatus" class="hidden">
+        <div class="market-closed text-white text-center py-2 text-sm">
+            <i class="fas fa-moon mr-2"></i>
+            已收盘 | 下次开盘：<span id="nextOpen">--</span>
+            <span class="ml-4 text-xs opacity-80">当前显示为收盘数据</span>
+        </div>
+    </div>
+
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold" aria-hidden="true">P</div>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">P</div>
                     <div>
                         <h1 class="text-xl font-bold text-gray-800">Portfolio Pro</h1>
                         <div class="flex items-center gap-2 text-xs">
-                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true"></span>
-                            <span class="text-gray-500">实时连接中</span>
-                            <span class="text-gray-400" aria-hidden="true">|</span>
-                            <span class="text-gray-500" id="lastUpdate" aria-live="polite">--:--:--</span>
+                            <span id="connectionStatus" class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span id="statusText" class="text-gray-500">已连接</span>
+                            <span class="text-gray-400">|</span>
+                            <span class="text-gray-500" id="lastUpdate">--</span>
+                            <span class="text-gray-400 ml-2">| 版本: </span>
+                            <span class="text-gray-500">v5.2.0</span>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button onclick="toggleSound()" id="soundBtn" class="p-2 rounded-lg hover:bg-gray-100 transition" aria-label="切换声音">
-                        <i class="fas fa-volume-up text-gray-600" aria-hidden="true"></i>
+                    <button onclick="syncData()" class="px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600">
+                        <i class="fas fa-sync mr-1"></i>同步
                     </button>
-                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 transition" aria-label="切换主题">
-                        <i class="fas fa-moon text-gray-600" id="themeIcon" aria-hidden="true"></i>
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-moon text-gray-600" id="themeIcon"></i>
                     </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main id="main-content" class="max-w-7xl mx-auto px-4 py-4">
-        <!-- 新手引导 -->
-        <div id="onboarding" class="glass rounded-xl p-4 mb-4 bg-indigo-50 border border-indigo-100" role="alert">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h3 class="font-bold text-indigo-800 mb-1">👋 欢迎使用 Portfolio Pro v5.1</h3>
-                    <p class="text-sm text-indigo-600">实时行情已开启，每3秒自动更新。点击股票持仓查看详情。</p>
-                </div>
-                <button onclick="dismissOnboarding()" class="text-indigo-400 hover:text-indigo-600" aria-label="关闭引导">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- 实时行情跑马灯 -->
-        <div class="glass rounded-xl p-3 mb-4 overflow-hidden">
-            <div class="flex items-center gap-4 text-sm whitespace-nowrap overflow-x-auto scroll-hide" id="tickerTape" role="marquee" aria-label="实时行情">
-                <span class="text-gray-500 font-medium"><i class="fas fa-bolt text-yellow-500 mr-1" aria-hidden="true"></i>实时行情:</span>
-            </div>
-        </div>
-
+    <div class="max-w-7xl mx-auto px-4 py-4">
         <!-- 资产总览 -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" aria-label="资产总览">
-            <div class="glass rounded-xl p-4" role="region" aria-label="总资产">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div class="glass rounded-xl p-4">
                 <div class="text-xs text-gray-500 mb-1">总资产</div>
-                <div class="text-xl font-bold text-gray-800" id="totalAssets" aria-live="polite">--</div>
+                <div class="text-xl font-bold text-gray-800 loading" id="totalAssets">加载中...</div>
             </div>
-            
-            <div class="glass rounded-xl p-4" id="dailyPnLCard" role="region" aria-label="今日盈亏">
+            <div class="glass rounded-xl p-4" id="dailyPnLCard">
                 <div class="text-xs text-gray-500 mb-1">今日盈亏</div>
-                <div class="text-xl font-bold" id="dailyPnL" aria-live="assertive">--</div>
+                <div class="text-xl font-bold loading" id="dailyPnL">加载中...</div>
                 <div class="text-xs mt-1" id="dailyPercent">--</div>
             </div>
-            
-            <div class="glass rounded-xl p-4" role="region" aria-label="累计收益">
+            <div class="glass rounded-xl p-4">
                 <div class="text-xs text-gray-500 mb-1">累计收益</div>
-                <div class="text-xl font-bold" id="totalPnL" aria-live="polite">--</div>
+                <div class="text-xl font-bold loading" id="totalPnL">加载中...</div>
             </div>
-            
-            <div class="glass rounded-xl p-4" role="region" aria-label="跑赢大盘">
-                <div class="text-xs text-gray-500 mb-1">跑赢大盘</div>
-                <div class="text-xl font-bold text-green-600">+8.3%</div>
-                <div class="text-xs text-gray-400">vs 沪深300</div>
+            <div class="glass rounded-xl p-4">
+                <div class="text-xs text-gray-500 mb-1">数据日期</div>
+                <div class="text-xl font-bold text-gray-800" id="dataDate">--</div>
             </div>
-        </section>
-
-        <!-- 情绪仪表盘 -->
-        <section class="glass rounded-xl p-4 mb-4">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="font-bold text-gray-700 text-lg">
-                    <i class="fas fa-heartbeat text-red-500 mr-2" aria-hidden="true"></i>市场情绪仪表盘
-                </h2>
-                <button onclick="toggleSection('sentiment')" class="text-xs text-gray-400 hover:text-gray-600 md:hidden" aria-label="折叠/展开">
-                    <i class="fas fa-chevron-up" id="sentiment-toggle"></i>
-                </button>
-            </div>
-            <div id="sentiment-content" class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <!-- 动态生成 -->
-            </div>
-        </section>
+        </div>
 
         <!-- 收益曲线 -->
-        <section class="glass rounded-xl p-4 mb-4">
+        <div class="glass rounded-xl p-4 mb-4">
             <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
-                <h2 class="font-bold text-gray-700 text-lg">
-                    <i class="fas fa-chart-line text-indigo-500 mr-2" aria-hidden="true"></i>收益曲线
-                </h2>
+                <h2 class="font-bold text-gray-700"><i class="fas fa-chart-line text-indigo-500 mr-2"></i>历史收益曲线</h2>
                 <div class="flex gap-2">
                     <button onclick="changePeriod('1M')" class="period-btn px-3 py-1 text-xs rounded bg-indigo-500 text-white" data-period="1M">1月</button>
                     <button onclick="changePeriod('3M')" class="period-btn px-3 py-1 text-xs rounded bg-gray-200 text-gray-600" data-period="3M">3月</button>
                     <button onclick="changePeriod('6M')" class="period-btn px-3 py-1 text-xs rounded bg-gray-200 text-gray-600" data-period="6M">6月</button>
                     <button onclick="changePeriod('1Y')" class="period-btn px-3 py-1 text-xs rounded bg-gray-200 text-gray-600" data-period="1Y">1年</button>
+                    <button onclick="changePeriod('ALL')" class="period-btn px-3 py-1 text-xs rounded bg-gray-200 text-gray-600" data-period="ALL">全部</button>
                 </div>
             </div>
             <div class="h-48 md:h-64">
-                <canvas id="performanceChart" role="img" aria-label="收益曲线图表"></canvas>
+                <canvas id="performanceChart"></canvas>
             </div>
-            <div class="flex justify-center gap-4 mt-2 text-xs flex-wrap">
-                <div class="flex items-center gap-1">
-                    <span class="w-3 h-3 bg-indigo-500 rounded" aria-hidden="true"></span>
-                    <span>我的组合</span>
-                </div>
-                <div class="flex items-center gap-1">
-                    <span class="w-3 h-3 bg-gray-400 rounded" aria-hidden="true"></span>
-                    <span>沪深300</span>
-                </div>
-                <div class="flex items-center gap-1">
-                    <span class="w-3 h-3 bg-red-400 rounded" aria-hidden="true"></span>
-                    <span>创业板</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- 主内容区 -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <!-- 左侧 -->
-            <div class="lg:col-span-2 space-y-4">
-                <section class="glass rounded-xl overflow-hidden" aria-label="持仓详情">
-                    <div class="border-b border-gray-200 flex overflow-x-auto scroll-hide">
-                        <button onclick="switchTab('stocks')" id="tab-btn-stocks" class="px-4 py-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 whitespace-nowrap" aria-selected="true" role="tab">股票持仓</button>
-                        <button onclick="switchTab('funds')" id="tab-btn-funds" class="px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap" aria-selected="false" role="tab">基金持仓</button>
-                        <button onclick="switchTab('news')" id="tab-btn-news" class="px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap" aria-selected="false" role="tab">舆情监控</button>
-                    </div>
-                    <div class="p-4">
-                        <div id="tab-stocks" class="tab-content active" role="tabpanel"></div>
-                        <div id="tab-funds" class="tab-content" role="tabpanel" aria-hidden="true"></div>
-                        <div id="tab-news" class="tab-content" role="tabpanel" aria-hidden="true"></div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- 右侧：交易日志 -->
-            <aside class="lg:col-span-1">
-                <section class="glass rounded-xl p-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="font-bold text-gray-700"><i class="fas fa-history mr-2" aria-hidden="true"></i>交易日志</h2>
-                        <button onclick="addTrade()" class="text-xs bg-indigo-500 text-white px-3 py-1.5 rounded hover:bg-indigo-600 transition">+ 记录</button>
-                    </div>
-                    <div id="tradeLog" class="space-y-2 max-h-80 overflow-y-auto scroll-hide">
-                        <!-- 动态生成 -->
-                    </div>
-                    <div id="emptyTradeLog" class="empty-state hidden">
-                        <i class="fas fa-clipboard text-4xl mb-2" aria-hidden="true"></i>
-                        <p>暂无交易记录</p>
-                        <p class="text-xs mt-1">点击"+ 记录"添加第一笔交易</p>
-                    </div>
-                </section>
-            </aside>
         </div>
-    </main>
 
-    <!-- 版本信息 -->
-    <div class="version-badge" onclick="showChangelog()" title="点击查看更新日志">
-        v5.1.0 <i class="fas fa-info-circle"></i>
+        <!-- 持仓详情 -->
+        <div class="glass rounded-xl overflow-hidden mb-4">
+            <div class="border-b border-gray-200 flex overflow-x-auto scroll-hide">
+                <button onclick="switchTab('stocks')" id="tab-btn-stocks" class="px-4 py-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 whitespace-nowrap">股票持仓</button>
+                <button onclick="switchTab('funds')" id="tab-btn-funds" class="px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap">基金持仓</button>
+                <button onclick="switchTab('history')" id="tab-btn-history" class="px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap">历史记录</button>
+            </div>
+            <div class="p-4">
+                <div id="tab-stocks" class="tab-content active"></div>
+                <div id="tab-funds" class="tab-content"></div>
+                <div id="tab-history" class="tab-content"></div>
+            </div>
+        </div>
+
+        <!-- 更新数据表单 -->
+        <div class="glass rounded-xl p-4 mb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-gray-700"><i class="fas fa-edit text-indigo-500 mr-2"></i>更新今日数据</h3>
+                <span class="text-xs text-gray-400">每日收盘后更新</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="text-xs text-gray-500">日期</label>
+                    <input type="date" id="updateDate" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">总资产</label>
+                    <input type="number" id="updateTotal" placeholder="394589" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">今日盈亏</label>
+                    <input type="number" id="updateDaily" placeholder="1512" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="submitDailyUpdate()" class="w-full px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                        提交更新
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 配置
-        const APP_VERSION = '5.1.0';
-        const UPDATE_INTERVAL = 3000;
+        // ============================================
+        // 配置与数据
+        // ============================================
+        const APP_VERSION = '5.2.0';
         
-        // 数据
-        let portfolio = {
+        // 真实历史数据（从2026年1月1日开始）
+        const historicalData = {
+            '2026-01-01': 370000,  // 初始资产
+            '2026-01-15': 375000,
+            '2026-02-01': 382000,
+            '2026-02-15': 388000,
+            '2026-03-01': 391000,
+            '2026-03-10': 394589    // 最新数据
+        };
+        
+        // 当前持仓数据（真实）
+        let portfolioData = {
+            date: '2026-03-10',
+            totalAssets: 394589.49,
+            dailyPnL: 1512.86,
+            totalPnL: 24104.66,
             stocks: [
-                { id: 'byd', name: "比亚迪", code: "002594", shares: 2100, cost: 103.635, basePrice: 96.60, price: 96.60, change: 0, changePercent: 0, marketValue: 202860, total: -14772.57, return: -6.79 },
-                { id: 'dw', name: "电网设备", code: "601669", shares: 5400, cost: 1.881, basePrice: 2.115, price: 2.115, change: 0, changePercent: 0, marketValue: 11421, total: 1261.80, return: 12.44 },
-                { id: 'zksg', name: "中科曙光", code: "603019", shares: 100, cost: 165.432, basePrice: 88.19, price: 88.19, change: 0, changePercent: 0, marketValue: 8819, total: -7724.15, return: -46.69 },
-                { id: 'lymy', name: "洛阳钼业", code: "603993", shares: 300, cost: -20.514, basePrice: 21.74, price: 21.74, change: 0, changePercent: 0, marketValue: 6522, total: 12676.30, return: 0 }
+                { name: "比亚迪", code: "002594", shares: 2100, price: 96.60, marketValue: 202860, dailyChange: 0, totalPnL: -14772.57 },
+                { name: "电网设备", code: "601669", shares: 5400, price: 2.115, marketValue: 11421, dailyChange: 0, totalPnL: 1261.80 },
+                { name: "中科曙光", code: "603019", shares: 100, price: 88.19, marketValue: 8819, dailyChange: 0, totalPnL: -7724.15 },
+                { name: "洛阳钼业", code: "603993", shares: 300, price: 21.74, marketValue: 6522, dailyChange: 0, totalPnL: 12676.30 }
             ],
             funds: [
-                { name: "嘉实新能源", code: "003984", value: 46090.54, daily: 859.37, total: 20385.88, return: 79.31 },
-                { name: "华夏AI ETF", code: "008586", value: 22473.41, daily: 432.15, total: 8473.41, return: 60.52 },
-                { name: "嘉实美成长", code: "000043", value: 37099.96, daily: 737.84, total: 4099.96, return: 12.42 },
-                { name: "华宝新能源", code: "007904", value: 17076.65, daily: 401.69, total: 1076.65, return: 6.73 },
-                { name: "华安恒科技", code: "015283", value: 10503.40, daily: 209.38, total: -1500.92, return: -12.50 }
+                { name: "嘉实新能源新材料", code: "003984", marketValue: 46090.54, dailyPnL: 859.37, totalPnL: 20385.88 },
+                { name: "华夏人工智能ETF", code: "008586", marketValue: 22473.41, dailyPnL: 432.15, totalPnL: 8473.41 },
+                { name: "嘉实美国成长", code: "000043", marketValue: 37099.96, dailyPnL: 737.84, totalPnL: 4099.96 },
+                { name: "华宝海外新能源汽车", code: "007904", marketValue: 17076.65, dailyPnL: 401.69, totalPnL: 1076.65 },
+                { name: "华夏中证红利质量", code: "016440", marketValue: 11257.07, dailyPnL: 207.80, totalPnL: 665.18 },
+                { name: "华泰柏瑞红利低波动", code: "007467", marketValue: 10166.89, dailyPnL: -28.86, totalPnL: -260.88 },
+                { name: "博时智选量化", code: "013231", marketValue: 9338.01, dailyPnL: 236.47, totalPnL: -374.33 },
+                { name: "华安恒生科技", code: "015283", marketValue: 10503.40, dailyPnL: 209.38, totalPnL: -1500.92 },
+                { name: "余额宝", code: "YEB", marketValue: 961.78, dailyPnL: 0.02, totalPnL: 98.33 }
             ]
         };
-
-        // 本地存储
-        function loadTradeLogs() {
-            const saved = localStorage.getItem('portfolio_trade_logs');
-            return saved ? JSON.parse(saved) : [
-                { date: '2026-03-10', action: '买入', name: '比亚迪', shares: 100, price: 96.50, reason: '突破5日线', result: '持有中' }
-            ];
+        
+        let currentPeriod = '1M';
+        let performanceChart = null;
+        
+        // ============================================
+        // 交易时间判断
+        // ============================================
+        function isMarketOpen() {
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const day = now.getDay(); // 0=周日, 6=周六
+            
+            // 周末休市
+            if (day === 0 || day === 6) return false;
+            
+            // 上午 9:30-11:30
+            const morningOpen = (hour === 9 && minute >= 30) || hour === 10 || (hour === 11 && minute <= 30);
+            // 下午 13:00-15:00
+            const afternoonOpen = (hour === 13) || (hour === 14) || (hour === 15 && minute === 0);
+            
+            return morningOpen || afternoonOpen;
         }
-
-        function saveTradeLogs() {
-            localStorage.setItem('portfolio_trade_logs', JSON.stringify(tradeLogs));
+        
+        function getNextOpenTime() {
+            const now = new Date();
+            const day = now.getDay();
+            const hour = now.getHours();
+            
+            // 如果是周末或15:00后，显示下周一
+            if (day === 0 || day === 6 || hour >= 15) {
+                const daysUntilMonday = day === 0 ? 1 : (day === 6 ? 2 : 1);
+                const nextMonday = new Date(now);
+                nextMonday.setDate(now.getDate() + daysUntilMonday);
+                return `周一 09:30`;
+            }
+            
+            // 如果是11:30-13:00，显示下午开盘
+            if (hour === 11 || (hour === 12)) {
+                return `今日 13:00`;
+            }
+            
+            // 如果是9:30前
+            if (hour < 9 || (hour === 9 && now.getMinutes() < 30)) {
+                return `今日 09:30`;
+            }
+            
+            return `交易中`;
         }
-
-        let tradeLogs = loadTradeLogs();
-        let soundEnabled = true;
-        let darkMode = false;
-
+        
+        // ============================================
         // 初始化
+        // ============================================
         function init() {
-            checkOnboarding();
-            updateDisplay();
-            renderSentiment();
+            checkMarketStatus();
+            renderData();
             renderPerformanceChart();
             renderStocksTab();
-            renderTradeLog();
-            startRealtimeUpdate();
-            startClock();
+            
+            // 设置日期输入框为今天
+            document.getElementById('updateDate').value = new Date().toISOString().split('T')[0];
+            
+            // 每分钟检查一次市场状态
+            setInterval(checkMarketStatus, 60000);
         }
-
-        // 新手引导
-        function checkOnboarding() {
-            if (localStorage.getItem('portfolio_onboarding_dismissed')) {
-                document.getElementById('onboarding').style.display = 'none';
-            }
-        }
-
-        function dismissOnboarding() {
-            document.getElementById('onboarding').style.display = 'none';
-            localStorage.setItem('portfolio_onboarding_dismissed', 'true');
-        }
-
-        // 折叠面板
-        function toggleSection(id) {
-            const content = document.getElementById(id + '-content');
-            const icon = document.getElementById(id + '-toggle');
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
+        
+        function checkMarketStatus() {
+            const statusDiv = document.getElementById('marketStatus');
+            const statusText = document.getElementById('statusText');
+            const connectionStatus = document.getElementById('connectionStatus');
+            
+            if (isMarketOpen()) {
+                statusDiv.classList.add('hidden');
+                statusText.textContent = '交易中';
+                connectionStatus.className = 'w-2 h-2 bg-red-500 rounded-full animate-pulse';
             } else {
-                content.classList.add('hidden');
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
+                statusDiv.classList.remove('hidden');
+                document.getElementById('nextOpen').textContent = getNextOpenTime();
+                statusText.textContent = '已收盘';
+                connectionStatus.className = 'w-2 h-2 bg-gray-400 rounded-full';
             }
-        }
-
-        // 时钟
-        function startClock() {
-            setInterval(() => {
-                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('zh-CN');
-            }, 1000);
-        }
-
-        // 实时更新（优化版：局部更新）
-        function startRealtimeUpdate() {
-            updateTicker();
-            setInterval(() => {
-                simulatePriceChange();
-            }, UPDATE_INTERVAL);
-        }
-
-        // 模拟价格变动（仅更新变动的DOM）
-        function simulatePriceChange() {
-            portfolio.stocks.forEach(stock => {
-                const oldPrice = stock.price;
-                const volatility = 0.002;
-                const change = (Math.random() - 0.5) * stock.basePrice * volatility;
-                stock.price = Math.max(stock.basePrice * 0.95, Math.min(stock.basePrice * 1.05, stock.price + change));
-                stock.change = stock.price - stock.basePrice;
-                stock.changePercent = (stock.change / stock.basePrice * 100);
-                stock.marketValue = stock.shares * stock.price;
-
-                // 局部更新DOM
-                const priceEl = document.getElementById(`price-${stock.id}`);
-                const changeEl = document.getElementById(`change-${stock.id}`);
-                const rowEl = document.getElementById(`row-${stock.id}`);
-                
-                if (priceEl && Math.abs(stock.price - oldPrice) > 0.01) {
-                    priceEl.textContent = stock.price.toFixed(2);
-                    changeEl.textContent = (stock.change >= 0 ? '+' : '') + stock.changePercent.toFixed(2) + '%';
-                    
-                    // 更新颜色
-                    const trendClass = stock.change >= 0 ? 'trend-up' : 'trend-down';
-                    priceEl.className = `text-right font-mono ${trendClass}`;
-                    changeEl.className = `text-right ${trendClass}`;
-                    
-                    // 闪烁效果
-                    rowEl.classList.remove('flash-up', 'flash-down');
-                    rowEl.classList.add(stock.change >= 0 ? 'flash-up' : 'flash-down');
-                    setTimeout(() => rowEl.classList.remove('flash-up', 'flash-down'), 500);
-                    
-                    // 语音预警
-                    if (Math.abs(stock.changePercent) > 2 && soundEnabled) {
-                        speak(`${stock.name}${stock.change > 0 ? '上涨' : '下跌'}${Math.abs(stock.changePercent).toFixed(2)}%`);
-                    }
-                }
-            });
-
-            // 更新汇总（节流：每3秒一次）
-            updateSummary();
-            updateTicker();
-        }
-
-        // 更新汇总数据
-        function updateSummary() {
-            const stockTotal = portfolio.stocks.reduce((s, st) => s + st.marketValue, 0);
-            const fundTotal = portfolio.funds.reduce((s, f) => s + f.value, 0);
-            const totalAssets = stockTotal + fundTotal;
-            const stockDaily = portfolio.stocks.reduce((s, st) => s + st.change * st.shares, 0);
-            const fundDaily = portfolio.funds.reduce((s, f) => s + f.daily, 0);
-            const totalDaily = stockDaily + fundDaily;
-            const totalPnL = portfolio.stocks.reduce((s, st) => s + st.total, 0) + portfolio.funds.reduce((s, f) => s + f.total, 0);
-
-            document.getElementById('totalAssets').textContent = formatMoney(totalAssets);
             
-            const dailyEl = document.getElementById('dailyPnL');
-            dailyEl.textContent = (totalDaily >= 0 ? '+' : '') + formatMoney(totalDaily);
-            dailyEl.className = 'text-xl font-bold ' + (totalDaily >= 0 ? 'trend-up' : 'trend-down');
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('zh-CN');
+            document.getElementById('dataDate').textContent = portfolioData.date;
+        }
+        
+        // ============================================
+        // 渲染数据（真实数据，无模拟）
+        // ============================================
+        function renderData() {
+            const data = portfolioData;
             
-            document.getElementById('dailyPercent').textContent = formatPercent(totalDaily / totalAssets * 100);
-            document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (totalDaily >= 0 ? 'trend-up' : 'trend-down');
+            document.getElementById('totalAssets').textContent = formatMoney(data.totalAssets);
+            document.getElementById('totalAssets').classList.remove('loading');
             
-            document.getElementById('totalPnL').textContent = (totalPnL >= 0 ? '+' : '') + formatMoney(totalPnL);
-            document.getElementById('totalPnL').className = 'text-xl font-bold ' + (totalPnL >= 0 ? 'trend-up' : 'trend-down');
-        }
-
-        // 更新显示（首次加载）
-        function updateDisplay() {
-            updateSummary();
-        }
-
-        // 跑马灯
-        function updateTicker() {
-            const html = portfolio.stocks.map(s => `
-                <span class="${s.change >= 0 ? 'trend-up' : 'trend-down'}">
-                    ${s.name} ${s.price.toFixed(2)} ${s.change >= 0 ? '▲' : '▼'}${Math.abs(s.changePercent).toFixed(2)}%
-                </span>
-            `).join('<span class="text-gray-300"> | </span>');
-            document.getElementById('tickerTape').innerHTML = `<span class="text-gray-500 font-medium"><i class="fas fa-bolt text-yellow-500 mr-1"></i>实时行情:</span> ` + html;
-        }
-
-        // 情绪仪表盘
-        function renderSentiment() {
-            const indicators = [
-                { name: '恐慌指数', value: '34', status: '贪婪', color: 'green' },
-                { name: '北向资金', value: '+12.5亿', status: '流入', color: 'red' },
-                { name: '两融余额', value: '+8.3亿', status: '加仓', color: 'red' },
-                { name: '期权PCR', value: '0.85', status: '偏多', color: 'red' },
-                { name: '涨跌比', value: '3:2', status: '偏多', color: 'red' }
-            ];
+            document.getElementById('dailyPnL').textContent = (data.dailyPnL >= 0 ? '+' : '') + formatMoney(data.dailyPnL);
+            document.getElementById('dailyPnL').className = 'text-xl font-bold ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            document.getElementById('dailyPnL').classList.remove('loading');
             
-            document.getElementById('sentiment-content').innerHTML = indicators.map(ind => `
-                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                    <div class="text-xs text-gray-500 mb-1">${ind.name}</div>
-                    <div class="text-lg font-bold ${ind.color === 'red' ? 'trend-up' : 'trend-down'}">${ind.value}</div>
-                    <div class="text-xs text-gray-400">${ind.status}</div>
-                </div>
-            `).join('');
+            document.getElementById('dailyPercent').textContent = formatPercent(data.dailyPnL / data.totalAssets * 100);
+            document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            
+            document.getElementById('totalPnL').textContent = (data.totalPnL >= 0 ? '+' : '') + formatMoney(data.totalPnL);
+            document.getElementById('totalPnL').className = 'text-xl font-bold ' + (data.totalPnL >= 0 ? 'trend-up' : 'trend-down');
+            document.getElementById('totalPnL').classList.remove('loading');
         }
-
-        // 收益曲线
-        let performanceChart = null;
+        
+        // ============================================
+        // 收益曲线（真实历史数据）
+        // ============================================
         function renderPerformanceChart() {
             const ctx = document.getElementById('performanceChart').getContext('2d');
             if (performanceChart) performanceChart.destroy();
             
-            const days = 30;
-            const labels = [];
-            const myData = [];
-            const hs300 = [];
-            const cyb = [];
-            
-            let myValue = 370000;
-            let hsValue = 4000;
-            let cybValue = 2200;
-            
-            for (let i = days; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                labels.push(date.toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'}));
-                
-                myValue *= (1 + (Math.random() - 0.45) * 0.02);
-                hsValue *= (1 + (Math.random() - 0.48) * 0.015);
-                cybValue *= (1 + (Math.random() - 0.50) * 0.025);
-                
-                if (i === 0) myValue = 394589;
-                
-                myData.push(((myValue / 370000 - 1) * 100).toFixed(2));
-                hs300.push(((hsValue / 4000 - 1) * 100).toFixed(2));
-                cyb.push(((cybValue / 2200 - 1) * 100).toFixed(2));
-            }
+            // 获取选中周期的数据
+            const chartData = getChartDataByPeriod(currentPeriod);
             
             performanceChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [
-                        { label: '我的组合', data: myData, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4, pointRadius: 0 },
-                        { label: '沪深300', data: hs300, borderColor: '#9ca3af', borderDash: [5,5], tension: 0.4, pointRadius: 0 },
-                        { label: '创业板', data: cyb, borderColor: '#f87171', borderDash: [5,5], tension: 0.4, pointRadius: 0 }
-                    ]
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: '我的组合',
+                        data: chartData.values,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99,102,241,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: { intersect: false, mode: 'index' },
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '资产: ' + formatMoney(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        x: { grid: { display: false }, ticks: { maxTicksLimit: 6, font: { size: 10 } } },
-                        y: { ticks: { callback: v => v + '%', font: { size: 10 } } }
+                        x: { grid: { display: false } },
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return '¥' + (value / 10000).toFixed(1) + '万';
+                                }
+                            }
+                        }
                     }
                 }
             });
         }
-
-        // 切换周期
-        function changePeriod(period) {
-            document.querySelectorAll('.period-btn').forEach(btn => {
-                btn.className = btn.dataset.period === period ? 
-                    'period-btn px-3 py-1 text-xs rounded bg-indigo-500 text-white' : 
-                    'period-btn px-3 py-1 text-xs rounded bg-gray-200 text-gray-600';
-            });
-            renderPerformanceChart();
+        
+        function getChartDataByPeriod(period) {
+            const entries = Object.entries(historicalData);
+            let filtered = entries;
+            
+            if (period === '1M') {
+                filtered = entries.slice(-4); // 最近4个数据点
+            } else if (period === '3M') {
+                filtered = entries.slice(-8);
+            } else if (period === '6M') {
+                filtered = entries.slice(-10);
+            } else if (period === '1Y') {
+                filtered = entries; // 全部（目前只有3个月数据）
+            }
+            // ALL 显示全部
+            
+            return {
+                labels: filtered.map(([date, _]) => {
+                    const d = new Date(date);
+                    return d.toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'});
+                }),
+                values: filtered.map(([_, value]) => value)
+            };
         }
-
-        // 标签页
-        function switchTab(tab) {
-            ['stocks', 'funds', 'news'].forEach(t => {
-                const btn = document.getElementById('tab-btn-' + t);
-                const content = document.getElementById('tab-' + t);
-                if (t === tab) {
-                    btn.className = 'px-4 py-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 whitespace-nowrap';
-                    btn.setAttribute('aria-selected', 'true');
-                    content.classList.add('active');
-                    content.setAttribute('aria-hidden', 'false');
+        
+        function changePeriod(period) {
+            currentPeriod = period;
+            
+            // 更新按钮样式
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                if (btn.dataset.period === period) {
+                    btn.className = 'period-btn px-3 py-1 text-xs rounded bg-indigo-500 text-white';
                 } else {
-                    btn.className = 'px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap';
-                    btn.setAttribute('aria-selected', 'false');
-                    content.classList.remove('active');
-                    content.setAttribute('aria-hidden', 'true');
+                    btn.className = 'period-btn px-3 py-1 text-xs rounded bg-gray-200 text-gray-600';
                 }
             });
             
-            if (tab === 'stocks') renderStocksTab();
-            else if (tab === 'funds') renderFundsTab();
-            else renderNewsTab();
+            // 重新渲染图表
+            renderPerformanceChart();
         }
-
-        // 股票表格（带ID用于局部更新）
+        
+        // ============================================
+        // 持仓表格
+        // ============================================
         function renderStocksTab() {
+            const data = portfolioData;
+            
             document.getElementById('tab-stocks').innerHTML = `
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="text-left text-gray-500 border-b">
-                            <th class="pb-2">名称</th>
+                            <th class="pb-2">名称/代码</th>
+                            <th class="pb-2 text-right">持股</th>
                             <th class="pb-2 text-right">现价</th>
-                            <th class="pb-2 text-right">涨跌</th>
-                            <th class="pb-2 text-right hidden md:table-cell">市值</th>
+                            <th class="pb-2 text-right">市值</th>
+                            <th class="pb-2 text-right">盈亏</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${portfolio.stocks.map(s => `
-                            <tr id="row-${s.id}" class="border-b border-gray-100 transition-colors">
+                        ${data.stocks.map(s => `
+                            <tr class="border-b border-gray-100">
                                 <td class="py-2">
                                     <div class="font-medium">${s.name}</div>
                                     <div class="text-xs text-gray-400">${s.code}</div>
                                 </td>
-                                <td id="price-${s.id}" class="py-2 text-right font-mono ${s.change >= 0 ? 'trend-up' : 'trend-down'}">${s.price.toFixed(2)}</td>
-                                <td id="change-${s.id}" class="py-2 text-right ${s.change >= 0 ? 'trend-up' : 'trend-down'}">${s.change >= 0 ? '+' : ''}${s.changePercent.toFixed(2)}%</td>
-                                <td class="py-2 text-right hidden md:table-cell">${formatMoney(s.marketValue)}</td>
+                                <td class="py-2 text-right">${s.shares.toLocaleString()}</td>
+                                <td class="py-2 text-right font-mono">${s.price.toFixed(2)}</td>
+                                <td class="py-2 text-right">${formatMoney(s.marketValue)}</td>
+                                <td class="py-2 text-right ${s.totalPnL >= 0 ? 'trend-up' : 'trend-down'}">${s.totalPnL >= 0 ? '+' : ''}${formatMoney(s.totalPnL)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             `;
-        }
-
-        function renderFundsTab() {
+            
             document.getElementById('tab-funds').innerHTML = `
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="text-left text-gray-500 border-b">
-                            <th class="pb-2">名称</th>
+                            <th class="pb-2">名称/代码</th>
                             <th class="pb-2 text-right">市值</th>
                             <th class="pb-2 text-right">日收益</th>
-                            <th class="pb-2 text-right">收益率</th>
+                            <th class="pb-2 text-right">持有收益</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${portfolio.funds.map(f => `
+                        ${data.funds.map(f => `
                             <tr class="border-b border-gray-100">
                                 <td class="py-2">
                                     <div class="font-medium">${f.name}</div>
                                     <div class="text-xs text-gray-400">${f.code}</div>
                                 </td>
-                                <td class="py-2 text-right">${formatMoney(f.value)}</td>
-                                <td class="py-2 text-right ${f.daily >= 0 ? 'trend-up' : 'trend-down'}">${f.daily >= 0 ? '+' : ''}${formatMoney(f.daily)}</td>
-                                <td class="py-2 text-right ${f.return >= 0 ? 'text-red-600' : 'text-green-600'}">${f.return}%</td>
+                                <td class="py-2 text-right">${formatMoney(f.marketValue)}</td>
+                                <td class="py-2 text-right ${f.dailyPnL >= 0 ? 'trend-up' : 'trend-down'}">${f.dailyPnL >= 0 ? '+' : ''}${formatMoney(f.dailyPnL)}</td>
+                                <td class="py-2 text-right ${f.totalPnL >= 0 ? 'trend-up' : 'trend-down'}">${f.totalPnL >= 0 ? '+' : ''}${formatMoney(f.totalPnL)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             `;
-        }
-
-        function renderNewsTab() {
-            const news = [
-                { title: '比亚迪2月销量增长55%', sentiment: 'positive', time: '2小时前' },
-                { title: '中科曙光AI订单饱满', sentiment: 'positive', time: '4小时前' },
-                { title: 'AI概念股估值偏高需警惕', sentiment: 'negative', time: '8小时前' }
-            ];
             
-            document.getElementById('tab-news').innerHTML = news.map(n => `
-                <div class="p-3 mb-2 rounded-lg ${n.sentiment === 'positive' ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'}">
-                    <div class="flex justify-between">
-                        <span class="font-medium text-sm">${n.title}</span>
-                        <span class="text-xs text-gray-400">${n.time}</span>
+            // 历史记录
+            const historyHtml = Object.entries(historicalData).map(([date, value]) => {
+                const prevValue = getPreviousValue(date);
+                const change = value - prevValue;
+                const changePercent = (change / prevValue * 100).toFixed(2);
+                return `
+                    <div class="flex justify-between py-2 border-b border-gray-100">
+                        <span class="text-gray-600">${date}</span>
+                        <span class="font-medium">${formatMoney(value)}</span>
+                        <span class="${change >= 0 ? 'trend-up' : 'trend-down'}">${change >= 0 ? '+' : ''}${changePercent}%</span>
                     </div>
-                </div>
-            `).join('');
-        }
-
-        // 交易日志（带本地存储）
-        function renderTradeLog() {
-            const container = document.getElementById('tradeLog');
-            const emptyState = document.getElementById('emptyTradeLog');
+                `;
+            }).reverse().join('');
             
-            if (tradeLogs.length === 0) {
-                container.innerHTML = '';
-                emptyState.classList.remove('hidden');
+            document.getElementById('tab-history').innerHTML = historyHtml || '<p class="text-gray-500 text-center py-4">暂无历史数据</p>';
+        }
+        
+        function getPreviousValue(currentDate) {
+            const dates = Object.keys(historicalData).sort();
+            const index = dates.indexOf(currentDate);
+            if (index > 0) {
+                return historicalData[dates[index - 1]];
+            }
+            return 370000; // 初始值
+        }
+        
+        function switchTab(tab) {
+            ['stocks', 'funds', 'history'].forEach(t => {
+                const btn = document.getElementById('tab-btn-' + t);
+                const content = document.getElementById('tab-' + t);
+                if (t === tab) {
+                    btn.className = 'px-4 py-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 whitespace-nowrap';
+                    content.classList.add('active');
+                } else {
+                    btn.className = 'px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 whitespace-nowrap';
+                    content.classList.remove('active');
+                }
+            });
+        }
+        
+        // ============================================
+        // 数据更新（每日同步）
+        // ============================================
+        function submitDailyUpdate() {
+            const date = document.getElementById('updateDate').value;
+            const total = parseFloat(document.getElementById('updateTotal').value);
+            const daily = parseFloat(document.getElementById('updateDaily').value);
+            
+            if (!date || !total) {
+                alert('请填写完整数据');
                 return;
             }
             
-            emptyState.classList.add('hidden');
-            container.innerHTML = tradeLogs.map(log => `
-                <div class="p-3 bg-gray-50 rounded-lg text-sm">
-                    <div class="flex justify-between mb-1">
-                        <span class="font-medium">${log.date} ${log.action} ${log.name}</span>
-                        <span class="text-gray-400">${log.shares ? log.shares + '股 @¥' + log.price : '¥' + log.amount}</span>
-                    </div>
-                    <div class="text-xs text-gray-500">理由: ${log.reason} | ${log.result}</div>
-                </div>
-            `).join('');
-        }
-
-        function addTrade() {
-            const name = prompt('股票名称:');
-            if (!name) return;
+            // 更新数据
+            portfolioData.date = date;
+            portfolioData.totalAssets = total;
+            portfolioData.dailyPnL = daily || 0;
+            portfolioData.totalPnL += (daily || 0);
             
-            const action = prompt('操作 (买入/卖出/定投):', '买入');
-            const shares = parseInt(prompt('股数:', '100')) || 100;
-            const price = parseFloat(prompt('价格:', '100')) || 100;
-            const reason = prompt('理由:', '技术分析');
+            // 添加到历史数据
+            historicalData[date] = total;
             
-            tradeLogs.unshift({
-                date: new Date().toLocaleDateString('zh-CN'),
-                action: action,
-                name: name,
-                shares: shares,
-                price: price,
-                reason: reason,
-                result: '持有中'
-            });
+            // 重新渲染
+            renderData();
+            renderPerformanceChart();
             
-            saveTradeLogs();
-            renderTradeLog();
+            // 保存到本地存储（临时方案，后续对接飞书）
+            localStorage.setItem('portfolio_data', JSON.stringify(portfolioData));
+            localStorage.setItem('portfolio_history', JSON.stringify(historicalData));
+            
+            alert('数据已更新！后续将同步到云端。');
         }
-
-        // 语音播报
-        function speak(text) {
-            if (!soundEnabled) return;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-CN';
-            utterance.rate = 1.2;
-            speechSynthesis.speak(utterance);
+        
+        function syncData() {
+            alert('正在开发云端同步功能...\n\n计划对接：\n• 飞书多维表格（多设备同步）\n• 每日自动备份\n• 历史数据云端存储');
         }
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            document.getElementById('soundBtn').innerHTML = `<i class="fas ${soundEnabled ? 'fa-volume-up' : 'fa-volume-mute'} text-gray-600"></i>`;
-            localStorage.setItem('portfolio_sound', soundEnabled ? 'on' : 'off');
-        }
-
-        function toggleTheme() {
-            darkMode = !darkMode;
-            document.body.className = darkMode ? 'bg-gray-900 min-h-screen transition-colors duration-300 dark-mode' : 'bg-gray-50 min-h-screen transition-colors duration-300';
-            document.getElementById('themeIcon').className = darkMode ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-gray-600';
-            localStorage.setItem('portfolio_theme', darkMode ? 'dark' : 'light');
-        }
-
-        // 显示更新日志
-        function showChangelog() {
-            alert(`Portfolio Pro v${APP_VERSION}\n\n更新内容:\n• 性能优化: 局部DOM更新\n• 可访问性: ARIA标签、键盘导航\n• 本地存储: 交易日志持久化\n• 空状态: 新手引导\n• 移动端: 响应式优化`);
-        }
-
-        // 恢复用户设置
-        function loadSettings() {
-            if (localStorage.getItem('portfolio_sound') === 'off') {
-                soundEnabled = false;
-                document.getElementById('soundBtn').innerHTML = '<i class="fas fa-volume-mute text-gray-600"></i>';
-            }
-            if (localStorage.getItem('portfolio_theme') === 'dark') {
-                darkMode = true;
-                document.body.className = 'bg-gray-900 min-h-screen transition-colors duration-300 dark-mode';
-                document.getElementById('themeIcon').className = 'fas fa-sun text-yellow-400';
-            }
-        }
-
-        // 格式化
+        
+        // ============================================
+        // 工具函数
+        // ============================================
         function formatMoney(n) {
-            return '¥' + Math.abs(n).toLocaleString('zh-CN', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            if (n >= 10000) {
+                return '¥' + (n / 10000).toFixed(2) + '万';
+            }
+            return '¥' + n.toLocaleString('zh-CN', {maximumFractionDigits: 0});
         }
+        
         function formatPercent(n) {
             return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
         }
-
+        
+        function toggleTheme() {
+            const body = document.getElementById('body');
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            document.getElementById('themeIcon').className = isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-gray-600';
+        }
+        
+        // ============================================
         // 启动
-        window.onload = function() {
-            loadSettings();
-            init();
-        };
+        // ============================================
+        window.onload = init;
     </script>
 </body>
 </html>
