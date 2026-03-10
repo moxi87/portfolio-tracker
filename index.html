@@ -3,438 +3,608 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人持仓跟踪系统</title>
+    <title>Portfolio Pro | 专业持仓分析系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .card { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .positive { color: #ef4444; }
-        .negative { color: #22c55e; }
-        .neutral { color: #6b7280; }
-        @media (max-width: 768px) { .hide-mobile { display: none; } }
+        * { font-family: 'Inter', 'Noto Sans SC', sans-serif; }
+        .glass { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); }
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+        .risk-high { border-left: 4px solid #ef4444; }
+        .risk-medium { border-left: 4px solid #f59e0b; }
+        .risk-low { border-left: 4px solid #22c55e; }
+        .trend-up { color: #ef4444; }
+        .trend-down { color: #22c55e; }
+        .dark-mode { background: #0f172a; color: #e2e8f0; }
+        .dark-mode .glass { background: rgba(30,41,59,0.9); }
+        .dark-mode .bg-white { background: #1e293b; }
+        .dark-mode .text-gray-800 { color: #e2e8f0; }
+        .dark-mode .text-gray-600 { color: #94a3b8; }
+        .dark-mode .border-gray-200 { border-color: #334155; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-50 min-h-screen transition-colors duration-300" id="body">
     <!-- 顶部导航 -->
-    <nav class="gradient-bg text-white p-4 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-chart-line text-2xl"></i>
-                <h1 class="text-xl font-bold">持仓跟踪系统</h1>
-            </div>
-            <div class="text-sm opacity-90">
-                <span id="currentDate"></span>
-                <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs">数据更新: 每日 20:00</span>
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                        P
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Portfolio Pro</h1>
+                        <p class="text-xs text-gray-500">专业持仓分析系统</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 transition">
+                        <i class="fas fa-moon text-gray-600" id="themeIcon"></i>
+                    </button>
+                    <div class="text-right">
+                        <div class="text-xs text-gray-500">数据更新</div>
+                        <div class="text-sm font-medium" id="lastUpdate">2026-03-10</div>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-4">
-        <!-- 总览卡片 -->
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <!-- 资产总览卡片 -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="card p-6">
-                <div class="text-gray-500 text-sm mb-1">总资产</div>
+            <div class="glass rounded-2xl p-6 card-hover">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-gray-500">总资产</span>
+                    <i class="fas fa-wallet text-indigo-500"></i>
+                </div>
                 <div class="text-2xl font-bold text-gray-800" id="totalAssets">¥0.00</div>
                 <div class="text-xs text-gray-400 mt-1">基金 + 股票</div>
             </div>
-            <div class="card p-6">
-                <div class="text-gray-500 text-sm mb-1">今日盈亏</div>
+            
+            <div class="glass rounded-2xl p-6 card-hover">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-gray-500">今日盈亏</span>
+                    <i class="fas fa-chart-line" id="dailyIcon"></i>
+                </div>
                 <div class="text-2xl font-bold" id="dailyPnL">¥0.00</div>
-                <div class="text-xs mt-1" id="dailyPnLPercent">0.00%</div>
+                <div class="text-xs mt-1 flex items-center gap-1">
+                    <span id="dailyPercent">0.00%</span>
+                    <span class="text-gray-400">|</span>
+                    <span id="dailyLabel" class="text-gray-400">较昨日</span>
+                </div>
             </div>
-            <div class="card p-6">
-                <div class="text-gray-500 text-sm mb-1">累计盈亏</div>
+            
+            <div class="glass rounded-2xl p-6 card-hover">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-gray-500">累计收益</span>
+                    <i class="fas fa-trophy text-yellow-500"></i>
+                </div>
                 <div class="text-2xl font-bold" id="totalPnL">¥0.00</div>
-                <div class="text-xs mt-1" id="totalPnLPercent">0.00%</div>
+                <div class="text-xs mt-1" id="totalReturn">0.00%</div>
             </div>
-            <div class="card p-6">
-                <div class="text-gray-500 text-sm mb-1">持仓标的</div>
-                <div class="text-2xl font-bold text-gray-800" id="holdingsCount">0</div>
-                <div class="text-xs text-gray-400 mt-1">基金 8 | 股票 4</div>
+            
+            <div class="glass rounded-2xl p-6 card-hover">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-gray-500">风险等级</span>
+                    <i class="fas fa-shield-alt text-green-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-orange-500">中等偏高</div>
+                <div class="text-xs text-gray-400 mt-1">β ≈ 1.08</div>
+            </div>
+        </div>
+
+        <!-- 风险警告面板 -->
+        <div class="glass rounded-2xl p-6 mb-6 risk-high bg-red-50" id="riskPanel">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-red-800 mb-2">⚠️ 持仓集中度过高风险</h3>
+                    <p class="text-sm text-red-700 mb-3">
+                        比亚迪占股票仓位 <strong>88.4%</strong>，占总投资 <strong>51.4%</strong>。
+                        单票集中度过高，若比亚迪下跌 20%，整体组合将亏损约 <strong>¥40,000</strong>。
+                    </p>
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-red-200 text-red-800 rounded-full text-xs font-medium">建议减仓</span>
+                        <span class="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-medium">或设置止损</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- 图表区域 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div class="card p-6">
-                <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-pie-chart mr-2"></i>资产配置</h3>
-                <canvas id="allocationChart"></canvas>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <div class="glass rounded-2xl p-6 lg:col-span-1">
+                <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    <i class="fas fa-pie-chart text-indigo-500"></i>
+                    资产配置
+                </h3>
+                <canvas id="allocationChart" height="200"></canvas>
+                <div class="mt-4 space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">基金占比</span>
+                        <span class="font-medium" id="fundRatio">41.8%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">股票占比</span>
+                        <span class="font-medium" id="stockRatio">58.2%</span>
+                    </div>
+                </div>
             </div>
-            <div class="card p-6">
-                <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-chart-bar mr-2"></i>分类收益</h3>
-                <canvas id="categoryChart"></canvas>
-            </div>
-        </div>
-
-        <!-- 基金持仓 -->
-        <div class="card mb-6">
-            <div class="p-4 border-b flex justify-between items-center">
-                <h3 class="font-bold text-gray-700"><i class="fas fa-wallet mr-2 text-blue-500"></i>基金持仓</h3>
-                <button onclick="toggleEdit('fund')" class="text-blue-500 hover:text-blue-700 text-sm">
-                    <i class="fas fa-edit mr-1"></i>编辑
-                </button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="p-3 text-left text-xs font-medium text-gray-500">名称</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500">市值</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500">日收益</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500 hide-mobile">持有收益</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500">收益率</th>
-                            <th class="p-3 text-center text-xs font-medium text-gray-500 hide-mobile">占比</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fundTable"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 股票持仓 -->
-        <div class="card mb-6">
-            <div class="p-4 border-b flex justify-between items-center">
-                <h3 class="font-bold text-gray-700"><i class="fas fa-chart-line mr-2 text-red-500"></i>股票持仓</h3>
-                <button onclick="toggleEdit('stock')" class="text-blue-500 hover:text-blue-700 text-sm">
-                    <i class="fas fa-edit mr-1"></i>编辑
-                </button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="p-3 text-left text-xs font-medium text-gray-500">名称</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500">市值</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500 hide-mobile">持股</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500 hide-mobile">现价/成本</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500">持仓盈亏</th>
-                            <th class="p-3 text-right text-xs font-medium text-gray-500">收益率</th>
-                        </tr>
-                    </thead>
-                    <tbody id="stockTable"></tbody>
-                </table>
+            
+            <div class="glass rounded-2xl p-6 lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-chart-area text-indigo-500"></i>
+                        资产走势
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="changeTimeRange('1M')" class="px-3 py-1 text-xs rounded-lg bg-indigo-500 text-white">1月</button>
+                        <button onclick="changeTimeRange('3M')" class="px-3 py-1 text-xs rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300">3月</button>
+                        <button onclick="changeTimeRange('6M')" class="px-3 py-1 text-xs rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300">6月</button>
+                        <button onclick="changeTimeRange('1Y')" class="px-3 py-1 text-xs rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300">1年</button>
+                    </div>
+                </div>
+                <canvas id="trendChart" height="100"></canvas>
             </div>
         </div>
 
-        <!-- Beta 分析 -->
-        <div class="card p-6 mb-6">
-            <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-calculator mr-2 text-purple-500"></i>风险指标（Beta 值估算）</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="betaAnalysis">
+        <!-- 行业分布与收益归因 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div class="glass rounded-2xl p-6">
+                <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    <i class="fas fa-industry text-indigo-500"></i>
+                    行业分布
+                </h3>
+                <canvas id="sectorChart" height="150"></canvas>
+            </div>
+            
+            <div class="glass rounded-2xl p-6">
+                <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    <i class="fas fa-trophy text-yellow-500"></i>
+                    收益贡献 Top 5
+                </h3>
+                <div class="space-y-3" id="topContributors">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 持仓详情标签页 -->
+        <div class="glass rounded-2xl overflow-hidden mb-6">
+            <div class="border-b border-gray-200">
+                <div class="flex">
+                    <button onclick="switchTab('funds')" id="tab-funds" class="px-6 py-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600">
+                        <i class="fas fa-wallet mr-2"></i>基金持仓
+                    </button>
+                    <button onclick="switchTab('stocks')" id="tab-stocks" class="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-chart-line mr-2"></i>股票持仓
+                    </button>
+                    <button onclick="switchTab('analysis')" id="tab-analysis" class="px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-brain mr-2"></i>智能分析
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6" id="tab-content">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+
+        <!-- 投资建议 -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <i class="fas fa-lightbulb text-yellow-500"></i>
+                投资建议
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="recommendations">
                 <!-- 动态生成 -->
-            </div>
-            <p class="text-xs text-gray-400 mt-4">* Beta 值基于标的类型和市场历史数据估算，仅供参考</p>
-        </div>
-    </div>
-
-    <!-- 编辑模态框 -->
-    <div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-lg m-4 max-h-[80vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold" id="editTitle">编辑持仓</h3>
-                <button onclick="closeEdit()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="editForm"></div>
-            <div class="flex gap-2 mt-4">
-                <button onclick="saveEdit()" class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">保存</button>
-                <button onclick="closeEdit()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded hover:bg-gray-300">取消</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 持仓数据 - 2026/3/10 快照
-        let portfolio = {
+        // 持仓数据
+        const portfolio = {
             funds: [
-                { name: "嘉实新能源新材料股票A", code: "003984", marketValue: 46090.54, dailyPnL: 859.37, holdingPnL: 20385.88, returnRate: 79.31, category: "新能源", market: "A股" },
-                { name: "华夏人工智能ETF联接D", code: "008586", marketValue: 22473.41, dailyPnL: 432.15, holdingPnL: 8473.41, returnRate: 60.52, category: "科技", market: "A股" },
-                { name: "嘉实美国成长股票(QDII)", code: "000043", marketValue: 37099.96, dailyPnL: 737.84, holdingPnL: 4099.96, returnRate: 12.42, category: "美股", market: "美股" },
-                { name: "华宝海外新能源汽车(QDII)A", code: "007904", marketValue: 17076.65, dailyPnL: 401.69, holdingPnL: 1076.65, returnRate: 6.73, category: "新能源", market: "海外" },
-                { name: "华夏中证红利质量ETF联接A", code: "016440", marketValue: 11257.07, dailyPnL: 207.80, holdingPnL: 665.18, returnRate: 6.28, category: "红利", market: "A股" },
-                { name: "华泰柏瑞中证红利低波动ETF联接C", code: "007467", marketValue: 10166.89, dailyPnL: -28.86, holdingPnL: -260.88, returnRate: -2.47, category: "红利", market: "A股" },
-                { name: "博时智选量化多因子股票C", code: "013231", marketValue: 9338.01, dailyPnL: 236.47, holdingPnL: -374.33, returnRate: -3.27, category: "量化", market: "A股" },
-                { name: "华安恒生科技ETF联接(QDII)C", code: "015283", marketValue: 10503.40, dailyPnL: 209.38, holdingPnL: -1500.92, returnRate: -12.50, category: "科技", market: "港股" },
-                { name: "余额宝", code: "YEB", marketValue: 961.78, dailyPnL: 0.02, holdingPnL: 98.33, returnRate: 0, category: "现金", market: "现金" }
+                { name: "嘉实新能源新材料", code: "003984", value: 46090.54, daily: 859.37, total: 20385.88, return: 79.31, sector: "新能源", market: "A股" },
+                { name: "华夏人工智能ETF", code: "008586", value: 22473.41, daily: 432.15, total: 8473.41, return: 60.52, sector: "科技", market: "A股" },
+                { name: "嘉实美国成长", code: "000043", value: 37099.96, daily: 737.84, total: 4099.96, return: 12.42, sector: "美股", market: "美股" },
+                { name: "华宝海外新能源汽车", code: "007904", value: 17076.65, daily: 401.69, total: 1076.65, return: 6.73, sector: "新能源", market: "海外" },
+                { name: "华夏中证红利质量", code: "016440", value: 11257.07, daily: 207.80, total: 665.18, return: 6.28, sector: "红利", market: "A股" },
+                { name: "华泰柏瑞红利低波动", code: "007467", value: 10166.89, daily: -28.86, total: -260.88, return: -2.47, sector: "红利", market: "A股" },
+                { name: "博时智选量化", code: "013231", value: 9338.01, daily: 236.47, total: -374.33, return: -3.27, sector: "量化", market: "A股" },
+                { name: "华安恒生科技", code: "015283", value: 10503.40, daily: 209.38, total: -1500.92, return: -12.50, sector: "科技", market: "港股" },
+                { name: "余额宝", code: "YEB", value: 961.78, daily: 0.02, total: 98.33, return: 0, sector: "现金", market: "现金" }
             ],
             stocks: [
-                { name: "比亚迪", code: "002594", marketValue: 202860.00, shares: 2100, price: 96.60, cost: 103.635, holdingPnL: -14772.57, returnRate: -6.79, category: "汽车", market: "A股" },
-                { name: "电网设备", code: "601669", marketValue: 11421.00, shares: 5400, price: 2.115, cost: 1.881, holdingPnL: 1261.80, returnRate: 12.44, category: "基建", market: "A股" },
-                { name: "中科曙光", code: "603019", marketValue: 8819.00, shares: 100, price: 88.19, cost: 165.432, holdingPnL: -7724.15, returnRate: -46.69, category: "科技", market: "A股" },
-                { name: "洛阳钼业", code: "603993", marketValue: 6522.00, shares: 300, price: 21.74, cost: -20.514, holdingPnL: 12676.30, returnRate: 0, category: "有色", market: "A股" }
+                { name: "比亚迪", code: "002594", value: 202860, shares: 2100, price: 96.60, cost: 103.635, total: -14772.57, return: -6.79, sector: "汽车", market: "A股", risk: "high" },
+                { name: "电网设备", code: "601669", value: 11421, shares: 5400, price: 2.115, cost: 1.881, total: 1261.80, return: 12.44, sector: "基建", market: "A股", risk: "low" },
+                { name: "中科曙光", code: "603019", value: 8819, shares: 100, price: 88.19, cost: 165.432, total: -7724.15, return: -46.69, sector: "科技", market: "A股", risk: "high" },
+                { name: "洛阳钼业", code: "603993", value: 6522, shares: 300, price: 21.74, cost: -20.514, total: 12676.30, return: 0, sector: "有色", market: "A股", risk: "medium" }
             ]
         };
 
-        // Beta 值参考表
-        const betaReference = {
-            "新能源": 1.3, "科技": 1.4, "汽车": 1.2, "有色": 1.1,
-            "基建": 0.9, "红利": 0.7, "量化": 0.8, "美股": 1.0,
-            "港股": 1.2, "现金": 0
-        };
+        // 计算汇总
+        const fundTotal = portfolio.funds.reduce((s, f) => s + f.value, 0);
+        const stockTotal = portfolio.stocks.reduce((s, s2) => s + s2.value, 0);
+        const totalAssets = fundTotal + stockTotal;
+        const fundDaily = portfolio.funds.reduce((s, f) => s + f.daily, 0);
+        const fundPnL = portfolio.funds.reduce((s, f) => s + f.total, 0);
+        const stockDaily = -1543;
+        const stockPnL = -8558.62;
+        const totalDaily = fundDaily + stockDaily;
+        const totalPnL = fundPnL + stockPnL;
 
-        // 格式化金额
-        function formatMoney(num) {
-            return '¥' + num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        // 格式化
+        const formatMoney = (n) => '¥' + Math.abs(n).toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const formatPercent = (n) => (n > 0 ? '+' : '') + n.toFixed(2) + '%';
 
-        // 格式化百分比
-        function formatPercent(num) {
-            return (num > 0 ? '+' : '') + num.toFixed(2) + '%';
-        }
-
-        // 渲染总览
-        function renderSummary() {
-            const totalFunds = portfolio.funds.reduce((sum, f) => sum + f.marketValue, 0);
-            const totalStocks = portfolio.stocks.reduce((sum, s) => sum + s.marketValue, 0);
-            const totalAssets = totalFunds + totalStocks;
-            
-            const fundDaily = portfolio.funds.reduce((sum, f) => sum + f.dailyPnL, 0);
-            const fundHolding = portfolio.funds.reduce((sum, f) => sum + f.holdingPnL, 0);
-            const stockDaily = -1543.00; // 股票账户今日盈亏
-            const stockHolding = -8558.62; // 股票账户累计盈亏
-            
-            const totalDaily = fundDaily + stockDaily;
-            const totalHolding = fundHolding + stockHolding;
-
+        // 初始化页面
+        function init() {
+            // 总览数据
             document.getElementById('totalAssets').textContent = formatMoney(totalAssets);
             
             const dailyEl = document.getElementById('dailyPnL');
-            dailyEl.textContent = (totalDaily > 0 ? '+' : '') + formatMoney(Math.abs(totalDaily)).replace('¥', '¥');
-            dailyEl.className = 'text-2xl font-bold ' + (totalDaily >= 0 ? 'positive' : 'negative');
+            dailyEl.textContent = (totalDaily >= 0 ? '+' : '-') + formatMoney(totalDaily);
+            dailyEl.className = 'text-2xl font-bold ' + (totalDaily >= 0 ? 'trend-up' : 'trend-down');
+            document.getElementById('dailyIcon').className = 'fas fa-chart-line ' + (totalDaily >= 0 ? 'trend-up' : 'trend-down');
             
-            document.getElementById('dailyPnLPercent').textContent = formatPercent(totalDaily / (totalAssets - totalDaily) * 100);
-            document.getElementById('dailyPnLPercent').className = 'text-xs mt-1 ' + (totalDaily >= 0 ? 'positive' : 'negative');
+            const dailyPct = document.getElementById('dailyPercent');
+            dailyPct.textContent = formatPercent(totalDaily / (totalAssets - totalDaily) * 100);
+            dailyPct.className = totalDaily >= 0 ? 'trend-up' : 'trend-down';
             
             const totalEl = document.getElementById('totalPnL');
-            totalEl.textContent = (totalHolding > 0 ? '+' : '') + formatMoney(Math.abs(totalHolding)).replace('¥', '¥');
-            totalEl.className = 'text-2xl font-bold ' + (totalHolding >= 0 ? 'positive' : 'negative');
+            totalEl.textContent = (totalPnL >= 0 ? '+' : '-') + formatMoney(totalPnL);
+            totalEl.className = 'text-2xl font-bold ' + (totalPnL >= 0 ? 'trend-up' : 'trend-down');
             
-            document.getElementById('totalPnLPercent').textContent = formatPercent(totalHolding / (totalAssets - totalHolding) * 100);
-            document.getElementById('totalPnLPercent').className = 'text-xs mt-1 ' + (totalHolding >= 0 ? 'positive' : 'negative');
+            document.getElementById('totalReturn').textContent = formatPercent(totalPnL / (totalAssets - totalPnL) * 100);
+            document.getElementById('totalReturn').className = 'text-xs mt-1 ' + (totalPnL >= 0 ? 'trend-up' : 'trend-down');
             
-            document.getElementById('holdingsCount').textContent = portfolio.funds.length + portfolio.stocks.length;
-            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('zh-CN');
+            document.getElementById('fundRatio').textContent = (fundTotal / totalAssets * 100).toFixed(1) + '%';
+            document.getElementById('stockRatio').textContent = (stockTotal / totalAssets * 100).toFixed(1) + '%';
+
+            // 渲染图表
+            renderAllocationChart();
+            renderTrendChart();
+            renderSectorChart();
+            renderTopContributors();
+            renderRecommendations();
+            
+            // 默认显示基金
+            switchTab('funds');
         }
 
-        // 渲染基金表格
-        function renderFunds() {
-            const total = portfolio.funds.reduce((sum, f) => sum + f.marketValue, 0);
-            const tbody = document.getElementById('fundTable');
-            tbody.innerHTML = portfolio.funds.map(f => {
-                const percent = (f.marketValue / total * 100).toFixed(2);
-                return `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="p-3">
-                            <div class="font-medium text-sm">${f.name}</div>
-                            <div class="text-xs text-gray-400">${f.code}</div>
-                        </td>
-                        <td class="p-3 text-right font-medium">${formatMoney(f.marketValue)}</td>
-                        <td class="p-3 text-right ${f.dailyPnL >= 0 ? 'positive' : 'negative'}">${f.dailyPnL >= 0 ? '+' : ''}${formatMoney(f.dailyPnL)}</td>
-                        <td class="p-3 text-right ${f.holdingPnL >= 0 ? 'positive' : 'negative'} hide-mobile">${f.holdingPnL >= 0 ? '+' : ''}${formatMoney(f.holdingPnL)}</td>
-                        <td class="p-3 text-right ${f.returnRate >= 0 ? 'positive' : 'negative'} font-bold">${formatPercent(f.returnRate)}</td>
-                        <td class="p-3 text-center hide-mobile">
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-500 h-2 rounded-full" style="width: ${percent}%"></div>
-                            </div>
-                            <span class="text-xs text-gray-500">${percent}%</span>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // 渲染股票表格
-        function renderStocks() {
-            const tbody = document.getElementById('stockTable');
-            tbody.innerHTML = portfolio.stocks.map(s => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3">
-                        <div class="font-medium text-sm">${s.name}</div>
-                        <div class="text-xs text-gray-400">${s.code}</div>
-                    </td>
-                    <td class="p-3 text-right font-medium">${formatMoney(s.marketValue)}</td>
-                    <td class="p-3 text-right hide-mobile">${s.shares.toLocaleString()}</td>
-                    <td class="p-3 text-right hide-mobile">
-                        <div>${s.price.toFixed(3)}</div>
-                        <div class="text-xs text-gray-400">${s.cost.toFixed(3)}</div>
-                    </td>
-                    <td class="p-3 text-right ${s.holdingPnL >= 0 ? 'positive' : 'negative'}">${s.holdingPnL >= 0 ? '+' : ''}${formatMoney(s.holdingPnL)}</td>
-                    <td class="p-3 text-right ${s.returnRate >= 0 ? 'positive' : 'negative'} font-bold">${formatPercent(s.returnRate)}</td>
-                </tr>
-            `).join('');
-        }
-
-        // 渲染资产配置图表
+        // 资产配置饼图
         function renderAllocationChart() {
-            const fundTotal = portfolio.funds.reduce((sum, f) => sum + f.marketValue, 0);
-            const stockTotal = portfolio.stocks.reduce((sum, s) => sum + s.marketValue, 0);
-            
             new Chart(document.getElementById('allocationChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['基金', '股票'],
+                    labels: ['基金', '股票', '现金'],
                     datasets: [{
-                        data: [fundTotal, stockTotal],
-                        backgroundColor: ['#3b82f6', '#ef4444'],
+                        data: [fundTotal, stockTotal, 961.78],
+                        backgroundColor: ['#6366f1', '#ef4444', '#22c55e'],
                         borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
+                    cutout: '70%',
                     plugins: {
-                        legend: { position: 'bottom' }
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
                     }
                 }
             });
         }
 
-        // 渲染分类收益图表
-        function renderCategoryChart() {
-            const categories = {};
+        // 资产走势（模拟历史数据）
+        function renderTrendChart() {
+            const dates = [];
+            const values = [];
+            let current = totalAssets - totalPnL;
+            
+            for (let i = 30; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                dates.push(date.toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'}));
+                
+                // 模拟波动
+                const volatility = 0.008;
+                const change = (Math.random() - 0.48) * current * volatility;
+                current += change;
+                if (i === 0) current = totalAssets;
+                values.push(current);
+            }
+
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: '总资产',
+                        data: values,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 6 } },
+                        y: { display: false }
+                    }
+                }
+            });
+        }
+
+        // 行业分布
+        function renderSectorChart() {
+            const sectors = {};
             [...portfolio.funds, ...portfolio.stocks].forEach(item => {
-                if (!categories[item.category]) categories[item.category] = 0;
-                categories[item.category] += item.holdingPnL || item.holdingPnL;
+                sectors[item.sector] = (sectors[item.sector] || 0) + item.value;
             });
             
-            new Chart(document.getElementById('categoryChart'), {
+            new Chart(document.getElementById('sectorChart'), {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(categories),
+                    labels: Object.keys(sectors),
                     datasets: [{
-                        label: '盈亏',
-                        data: Object.values(categories),
-                        backgroundColor: Object.values(categories).map(v => v >= 0 ? '#ef4444' : '#22c55e')
+                        data: Object.values(sectors),
+                        backgroundColor: ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6'],
+                        borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { display: false }
+                    }
                 }
             });
         }
 
-        // 渲染 Beta 分析
-        function renderBetaAnalysis() {
-            const all = [...portfolio.funds, ...portfolio.stocks];
-            const total = all.reduce((sum, i) => sum + i.marketValue, 0);
-            let weightedBeta = 0;
+        // 收益贡献 Top 5
+        function renderTopContributors() {
+            const all = [...portfolio.funds, ...portfolio.stocks]
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 5);
             
-            const marketExposure = {};
-            all.forEach(item => {
-                const beta = betaReference[item.category] || 1;
-                weightedBeta += beta * (item.marketValue / total);
-                
-                if (!marketExposure[item.market]) marketExposure[item.market] = 0;
-                marketExposure[item.market] += item.marketValue;
-            });
-
-            document.getElementById('betaAnalysis').innerHTML = `
-                <div class="text-center p-3 bg-purple-50 rounded">
-                    <div class="text-sm text-gray-500">组合 Beta</div>
-                    <div class="text-2xl font-bold text-purple-600">${weightedBeta.toFixed(2)}</div>
-                </div>
-                <div class="text-center p-3 bg-blue-50 rounded">
-                    <div class="text-sm text-gray-500">A股占比</div>
-                    <div class="text-2xl font-bold text-blue-600">${((marketExposure['A股']||0)/total*100).toFixed(1)}%</div>
-                </div>
-                <div class="text-center p-3 bg-red-50 rounded">
-                    <div class="text-sm text-gray-500">海外占比</div>
-                    <div class="text-2xl font-bold text-red-600">${(((marketExposure['美股']||0)+(marketExposure['港股']||0)+(marketExposure['海外']||0))/total*100).toFixed(1)}%</div>
-                </div>
-                <div class="text-center p-3 bg-green-50 rounded">
-                    <div class="text-sm text-gray-500">现金占比</div>
-                    <div class="text-2xl font-bold text-green-600">${((marketExposure['现金']||0)/total*100).toFixed(2)}%</div>
-                </div>
-            `;
-        }
-
-        // 编辑功能
-        let editingType = '';
-        function toggleEdit(type) {
-            editingType = type;
-            document.getElementById('editTitle').textContent = type === 'fund' ? '编辑基金持仓' : '编辑股票持仓';
-            document.getElementById('editModal').classList.remove('hidden');
-            document.getElementById('editModal').classList.add('flex');
-            renderEditForm();
-        }
-
-        function closeEdit() {
-            document.getElementById('editModal').classList.add('hidden');
-            document.getElementById('editModal').classList.remove('flex');
-        }
-
-        function renderEditForm() {
-            const data = editingType === 'fund' ? portfolio.funds : portfolio.stocks;
-            const isFund = editingType === 'fund';
-            
-            document.getElementById('editForm').innerHTML = data.map((item, idx) => `
-                <div class="border-b pb-3 mb-3">
-                    <div class="font-medium mb-2">${item.name} (${item.code})</div>
-                    <div class="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                            <label class="text-gray-500">市值</label>
-                            <input type="number" id="edit_${editingType}_${idx}_value" value="${item.marketValue}" class="w-full border rounded px-2 py-1">
+            document.getElementById('topContributors').innerHTML = all.map((item, i) => `
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 rounded-full ${i < 3 ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-100 text-gray-500'} flex items-center justify-center text-xs font-bold">
+                        ${i + 1}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-sm">${item.name}</span>
+                            <span class="font-bold text-sm ${item.total >= 0 ? 'trend-up' : 'trend-down'}">${item.total >= 0 ? '+' : ''}${formatMoney(item.total)}</span>
                         </div>
-                        <div>
-                            <label class="text-gray-500">日收益</label>
-                            <input type="number" id="edit_${editingType}_${idx}_daily" value="${item.dailyPnL || 0}" class="w-full border rounded px-2 py-1">
+                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                            <div class="h-1.5 rounded-full ${item.total >= 0 ? 'bg-red-500' : 'bg-green-500'}" style="width: ${Math.min(Math.abs(item.total) / 20000 * 100, 100)}%"></div>
                         </div>
-                        ${isFund ? `
-                            <div>
-                                <label class="text-gray-500">持有收益</label>
-                                <input type="number" id="edit_${editingType}_${idx}_holding" value="${item.holdingPnL}" class="w-full border rounded px-2 py-1">
-                            </div>
-                            <div>
-                                <label class="text-gray-500">收益率(%)</label>
-                                <input type="number" step="0.01" id="edit_${editingType}_${idx}_rate" value="${item.returnRate}" class="w-full border rounded px-2 py-1">
-                            </div>
-                        ` : `
-                            <div>
-                                <label class="text-gray-500">持股数</label>
-                                <input type="number" id="edit_${editingType}_${idx}_shares" value="${item.shares}" class="w-full border rounded px-2 py-1">
-                            </div>
-                            <div>
-                                <label class="text-gray-500">现价</label>
-                                <input type="number" step="0.001" id="edit_${editingType}_${idx}_price" value="${item.price}" class="w-full border rounded px-2 py-1">
-                            </div>
-                        `}
                     </div>
                 </div>
             `).join('');
         }
 
-        function saveEdit() {
-            const data = editingType === 'fund' ? portfolio.funds : portfolio.stocks;
-            const isFund = editingType === 'fund';
-            
-            data.forEach((item, idx) => {
-                item.marketValue = parseFloat(document.getElementById(`edit_${editingType}_${idx}_value`).value);
-                item.dailyPnL = parseFloat(document.getElementById(`edit_${editingType}_${idx}_daily`).value);
-                if (isFund) {
-                    item.holdingPnL = parseFloat(document.getElementById(`edit_${editingType}_${idx}_holding`).value);
-                    item.returnRate = parseFloat(document.getElementById(`edit_${editingType}_${idx}_rate`).value);
+        // 投资建议
+        function renderRecommendations() {
+            document.getElementById('recommendations').innerHTML = `
+                <div class="p-4 bg-red-50 rounded-xl border border-red-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                        <span class="font-bold text-red-800">减仓建议</span>
+                    </div>
+                    <p class="text-sm text-red-700">比亚迪占仓位过高，建议减仓至 30% 以下，分散风险。</p>
+                </div>
+                <div class="p-4 bg-yellow-50 rounded-xl border border-yellow-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-hand-holding-usd text-yellow-600"></i>
+                        <span class="font-bold text-yellow-800">止损策略</span>
+                    </div>
+                    <p class="text-sm text-yellow-700">中科曙光浮亏 -47%，建议设定止损线或考虑补仓摊薄成本。</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl border border-green-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-check-circle text-green-500"></i>
+                        <span class="font-bold text-green-800">配置良好</span>
+                    </div>
+                    <p class="text-sm text-green-700">新能源和科技基金表现优异，建议继续持有核心仓位。</p>
+                </div>
+            `;
+        }
+
+        // 标签页切换
+        function switchTab(tab) {
+            // 更新按钮样式
+            ['funds', 'stocks', 'analysis'].forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                if (t === tab) {
+                    btn.className = 'px-6 py-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600';
                 } else {
-                    item.shares = parseInt(document.getElementById(`edit_${editingType}_${idx}_shares`).value);
-                    item.price = parseFloat(document.getElementById(`edit_${editingType}_${idx}_price`).value);
-                    item.marketValue = item.shares * item.price;
+                    btn.className = 'px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700';
                 }
             });
-            
-            closeEdit();
-            init();
+
+            // 渲染内容
+            const content = document.getElementById('tab-content');
+            if (tab === 'funds') {
+                content.innerHTML = renderFundsTable();
+            } else if (tab === 'stocks') {
+                content.innerHTML = renderStocksTable();
+            } else {
+                content.innerHTML = renderAnalysis();
+            }
+        }
+
+        function renderFundsTable() {
+            return `
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-xs text-gray-500 border-b border-gray-200">
+                                <th class="pb-3 font-medium">名称/代码</th>
+                                <th class="pb-3 font-medium text-right">市值</th>
+                                <th class="pb-3 font-medium text-right">日收益</th>
+                                <th class="pb-3 font-medium text-right hidden md:table-cell">持有收益</th>
+                                <th class="pb-3 font-medium text-right">收益率</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${portfolio.funds.map(f => `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3">
+                                        <div class="font-medium text-sm">${f.name}</div>
+                                        <div class="text-xs text-gray-400">${f.code} · ${f.market}</div>
+                                    </td>
+                                    <td class="py-3 text-right font-medium">${formatMoney(f.value)}</td>
+                                    <td class="py-3 text-right ${f.daily >= 0 ? 'trend-up' : 'trend-down'}">${f.daily >= 0 ? '+' : ''}${formatMoney(f.daily)}</td>
+                                    <td class="py-3 text-right ${f.total >= 0 ? 'trend-up' : 'trend-down'} hidden md:table-cell">${f.total >= 0 ? '+' : ''}${formatMoney(f.total)}</td>
+                                    <td class="py-3 text-right">
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium ${f.return >= 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${formatPercent(f.return)}</span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderStocksTable() {
+            return `
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-xs text-gray-500 border-b border-gray-200">
+                                <th class="pb-3 font-medium">名称/代码</th>
+                                <th class="pb-3 font-medium text-right">市值</th>
+                                <th class="pb-3 font-medium text-right hidden md:table-cell">持股/成本</th>
+                                <th class="pb-3 font-medium text-right">持仓盈亏</th>
+                                <th class="pb-3 font-medium text-right">收益率</th>
+                                <th class="pb-3 font-medium text-center">风险</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${portfolio.stocks.map(s => `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50 ${s.risk === 'high' ? 'bg-red-50/30' : ''}">
+                                    <td class="py-3">
+                                        <div class="font-medium text-sm">${s.name}</div>
+                                        <div class="text-xs text-gray-400">${s.code} · ${s.market}</div>
+                                    </td>
+                                    <td class="py-3 text-right font-medium">${formatMoney(s.value)}</td>
+                                    <td class="py-3 text-right hidden md:table-cell">
+                                        <div class="text-sm">${s.shares.toLocaleString()}股</div>
+                                        <div class="text-xs text-gray-400">¥${s.cost.toFixed(3)}</div>
+                                    </td>
+                                    <td class="py-3 text-right ${s.total >= 0 ? 'trend-up' : 'trend-down'} font-medium">${s.total >= 0 ? '+' : ''}${formatMoney(s.total)}</td>
+                                    <td class="py-3 text-right">
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium ${s.return >= 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${formatPercent(s.return)}</span>
+                                    </td>
+                                    <td class="py-3 text-center">
+                                        ${s.risk === 'high' ? '<span class="px-2 py-1 bg-red-100 text-red-600 rounded text-xs">高</span>' : 
+                                          s.risk === 'medium' ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-600 rounded text-xs">中</span>' : 
+                                          '<span class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs">低</span>'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderAnalysis() {
+            const bydRatio = (202860 / stockTotal * 100).toFixed(1);
+            return `
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white">
+                            <div class="text-sm opacity-80 mb-1">组合 Beta</div>
+                            <div class="text-3xl font-bold">1.08</div>
+                            <div class="text-xs opacity-80 mt-1">高于市场平均</div>
+                        </div>
+                        <div class="p-4 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl text-white">
+                            <div class="text-sm opacity-80 mb-1">最大回撤</div>
+                            <div class="text-3xl font-bold">-12.5%</div>
+                            <div class="text-xs opacity-80 mt-1">华安恒生科技</div>
+                        </div>
+                        <div class="p-4 bg-gradient-to-br from-green-400 to-teal-500 rounded-xl text-white">
+                            <div class="text-sm opacity-80 mb-1">最佳收益</div>
+                            <div class="text-3xl font-bold">+79.3%</div>
+                            <div class="text-xs opacity-80 mt-1">嘉实新能源</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <h4 class="font-bold text-gray-700 mb-3">持仓集中度分析</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>比亚迪占股票仓位</span>
+                                    <span class="font-bold text-red-600">${bydRatio}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-red-500 h-2 rounded-full" style="width: ${bydRatio}%"></div>
+                                </div>
+                                <div class="text-xs text-red-600 mt-1">⚠️ 建议控制在 30% 以下</div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>前三大持仓占比</span>
+                                    <span class="font-bold">72.4%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 72.4%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                        <h4 class="font-bold text-blue-800 mb-2">再平衡建议</h4>
+                        <ul class="text-sm text-blue-700 space-y-2">
+                            <li>• 比亚迪减仓 800 股，释放约 ¥77,000 资金</li>
+                            <li>• 加仓红利低波或债券基金，降低组合波动</li>
+                            <li>• 中科曙光建议设定 50% 止损线</li>
+                            <li>• 恒生科技 ETF 可继续持有，等待港股反弹</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 主题切换
+        let darkMode = false;
+        function toggleTheme() {
+            darkMode = !darkMode;
+            document.body.className = darkMode ? 'bg-gray-900 min-h-screen transition-colors duration-300 dark-mode' : 'bg-gray-50 min-h-screen transition-colors duration-300';
+            document.getElementById('themeIcon').className = darkMode ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-gray-600';
+        }
+
+        // 时间范围切换
+        function changeTimeRange(range) {
+            // 重新渲染趋势图
+            renderTrendChart();
         }
 
         // 初始化
-        function init() {
-            renderSummary();
-            renderFunds();
-            renderStocks();
-            renderAllocationChart();
-            renderCategoryChart();
-            renderBetaAnalysis();
-        }
-
         init();
     </script>
 </body>
