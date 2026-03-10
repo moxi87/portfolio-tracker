@@ -1,0 +1,63 @@
+name: Daily Portfolio Update
+
+on:
+  schedule:
+    # 每天 20:30 运行 (UTC 12:30)
+    - cron: '30 12 * * 1-5'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Fetch market data and update
+      run: |
+        cat > update-data.js << 'EOF'
+        const fs = require('fs');
+        const https = require('https');
+        
+        // 读取现有数据
+        let data = { lastUpdate: new Date().toISOString().split('T')[0], funds: [], stocks: [] };
+        try {
+          data = JSON.parse(fs.readFileSync('portfolio-data.json', 'utf8'));
+        } catch(e) {}
+        
+        // 更新时间戳
+        const today = new Date().toISOString().split('T')[0];
+        data.lastUpdate = today;
+        
+        // 这里可以添加真实数据抓取逻辑
+        // 目前先更新时间戳，后续可以对接新浪/东方财富API
+        console.log('Data updated at:', today);
+        
+        fs.writeFileSync('portfolio-data.json', JSON.stringify(data, null, 2));
+        console.log('Portfolio data updated successfully');
+        EOF
+        
+        node update-data.js
+      
+    - name: Update last update time
+      run: |
+        echo "Last updated: $(date)" > LAST_UPDATE.txt
+        
+    - name: Commit changes
+      run: |
+        git config --local user.email "kimi-auto@openclaw.ai"
+        git config --local user.name "Kimi Auto Update"
+        git add portfolio-data.json LAST_UPDATE.txt
+        git diff --staged --quiet || git commit -m "Auto update: $(date +'%Y-%m-%d %H:%M')"
+        
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
