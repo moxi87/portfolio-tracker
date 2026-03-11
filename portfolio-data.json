@@ -2,29 +2,164 @@
   "lastUpdate": "2026-03-11",
   "lastSync": "00:05",
   "funds": [
-    { "name": "嘉实新能源新材料股票A", "code": "003984", "marketValue": 46090.54, "dailyPnL": 859.37, "holdingPnL": 20385.88, "returnRate": 79.31, "category": "新能源", "market": "A股" },
-    { "name": "华夏人工智能ETF联接D", "code": "008586", "marketValue": 22473.41, "dailyPnL": 432.15, "holdingPnL": 8473.41, "returnRate": 60.52, "category": "科技", "market": "A股" },
-    { "name": "嘉实美国成长股票(QDII)", "code": "000043", "marketValue": 37099.96, "dailyPnL": 737.84, "holdingPnL": 4099.96, "returnRate": 12.42, "category": "美股", "market": "美股" },
-    { "name": "华宝海外新能源汽车(QDII)A", "code": "007904", "marketValue": 17076.65, "dailyPnL": 401.69, "holdingPnL": 1076.65, "returnRate": 6.73, "category": "新能源", "market": "海外" },
-    { "name": "华夏中证红利质量ETF联接A", "code": "016440", "marketValue": 11257.07, "dailyPnL": 207.80, "holdingPnL": 665.18, "returnRate": 6.28, "category": "红利", "market": "A股" },
-    { "name": "华泰柏瑞中证红利低波动ETF联接C", "code": "007467", "marketValue": 10166.89, "dailyPnL": -28.86, "holdingPnL": -260.88, "returnRate": -2.47, "category": "红利", "market": "A股" },
-    { "name": "博时智选量化多因子股票C", "code": "013231", "marketValue": 9338.01, "dailyPnL": 236.47, "holdingPnL": -374.33, "returnRate": -3.27, "category": "量化", "market": "A股" },
-    { "name": "华安恒生科技ETF联接(QDII)C", "code": "015283", "marketValue": 10503.40, "dailyPnL": 209.38, "holdingPnL": -1500.92, "returnRate": -12.50, "category": "科技", "market": "港股" },
-    { "name": "余额宝", "code": "YEB", "marketValue": 961.78, "dailyPnL": 0.02, "holdingPnL": 98.33, "returnRate": 0, "category": "现金", "market": "现金" }
+    {
+      "name": "嘉实新能源新材料股票A",
+      "code": "003984",
+      "marketValue": 47270.386395461464,
+      "dailyPnL": 1179.8463954614615,
+      "holdingPnL": 20385.88,
+      "returnRate": 79.31,
+      "category": "新能源",
+      "market": "A股",
+      "price": 2.9648
+    },
+    {
+      "name": "华夏人工智能ETF联接D",
+      "code": "008586",
+      "marketValue": 22217.833136539135,
+      "dailyPnL": -255.5768634608633,
+      "holdingPnL": 8473.41,
+      "returnRate": 60.52,
+      "category": "科技",
+      "market": "A股",
+      "price": 1.4083
+    },
+    {
+      "name": "嘉实美国成长股票(QDII)",
+      "code": "000043",
+      "marketValue": 36769.77909806054,
+      "dailyPnL": -330.1809019394608,
+      "holdingPnL": 4099.96,
+      "returnRate": 12.42,
+      "category": "美股",
+      "market": "美股",
+      "price": 5.4679
+    },
+    {
+      "name": "华宝海外新能源汽车(QDII)A",
+      "code": "007904",
+      "marketValue": 17076.65,
+      "dailyPnL": 401.69,
+      "holdingPnL": 1076.65,
+      "returnRate": 6.73,
+      "category": "新能源",
+      "market": "海外"
+    },
+    {
+      "name": "华夏中证红利质量ETF联接A",
+      "code": "016440",
+      "marketValue": 11272.428763242375,
+      "dailyPnL": 15.358763242375916,
+      "holdingPnL": 665.18,
+      "returnRate": 6.28,
+      "category": "红利",
+      "market": "A股",
+      "price": 1.2477
+    },
+    {
+      "name": "华泰柏瑞中证红利低波动ETF联接C",
+      "code": "007467",
+      "marketValue": 10277.938412835545,
+      "dailyPnL": 111.04841283554488,
+      "holdingPnL": -260.88,
+      "returnRate": -2.47,
+      "category": "红利",
+      "market": "A股",
+      "price": 1.6382
+    },
+    {
+      "name": "博时智选量化多因子股票C",
+      "code": "013231",
+      "marketValue": 9342.201583625103,
+      "dailyPnL": 4.191583625102397,
+      "holdingPnL": -374.33,
+      "returnRate": -3.27,
+      "category": "量化",
+      "market": "A股",
+      "price": 1.1144
+    },
+    {
+      "name": "华安恒生科技ETF联接(QDII)C",
+      "code": "015283",
+      "marketValue": 10503.4,
+      "dailyPnL": 209.38,
+      "holdingPnL": -1500.92,
+      "returnRate": -12.5,
+      "category": "科技",
+      "market": "港股"
+    },
+    {
+      "name": "余额宝",
+      "code": "YEB",
+      "marketValue": 961.78,
+      "dailyPnL": 0.02,
+      "holdingPnL": 98.33,
+      "returnRate": 0,
+      "category": "现金",
+      "market": "现金"
+    }
   ],
   "stocks": [
-    { "name": "比亚迪", "code": "002594", "marketValue": 202860.00, "shares": 2100, "price": 96.60, "cost": 103.635, "holdingPnL": -14772.57, "returnRate": -6.79, "category": "汽车", "market": "A股" },
-    { "name": "电网设备", "code": "601669", "marketValue": 11421.00, "shares": 5400, "price": 2.115, "cost": 1.881, "holdingPnL": 1261.80, "returnRate": 12.44, "category": "基建", "market": "A股" },
-    { "name": "中科曙光", "code": "603019", "marketValue": 8819.00, "shares": 100, "price": 88.19, "cost": 165.432, "holdingPnL": -7724.15, "returnRate": -46.69, "category": "科技", "market": "A股" },
-    { "name": "洛阳钼业", "code": "603993", "marketValue": 6522.00, "shares": 300, "price": 21.74, "cost": -20.514, "holdingPnL": 12676.30, "returnRate": 0, "category": "有色", "market": "A股" }
+    {
+      "name": "比亚迪",
+      "code": "002594",
+      "marketValue": 208362,
+      "shares": 2100,
+      "price": 99.22,
+      "cost": 103.635,
+      "holdingPnL": -14772.57,
+      "returnRate": -6.79,
+      "category": "汽车",
+      "market": "A股",
+      "dailyPnL": 5502.000000000009
+    },
+    {
+      "name": "电网设备",
+      "code": "601669",
+      "marketValue": 34452,
+      "shares": 5400,
+      "price": 6.38,
+      "cost": 1.881,
+      "holdingPnL": 1261.8,
+      "returnRate": 12.44,
+      "category": "基建",
+      "market": "A股",
+      "dailyPnL": 23031
+    },
+    {
+      "name": "中科曙光",
+      "code": "603019",
+      "marketValue": 8805,
+      "shares": 100,
+      "price": 88.05,
+      "cost": 165.432,
+      "holdingPnL": -7724.15,
+      "returnRate": -46.69,
+      "category": "科技",
+      "market": "A股",
+      "dailyPnL": -14.000000000000057
+    },
+    {
+      "name": "洛阳钼业",
+      "code": "603993",
+      "marketValue": 6444,
+      "shares": 300,
+      "price": 21.48,
+      "cost": -20.514,
+      "holdingPnL": 12676.3,
+      "returnRate": 0,
+      "category": "有色",
+      "market": "A股",
+      "dailyPnL": -77.9999999999994
+    }
   ],
   "summary": {
-    "totalAssets": 394589.49,
+    "totalAssets": 423755.39738976426,
     "fundValue": 164967.49,
-    "stockValue": 229622.00,
-    "dailyPnL": 1512.86,
+    "stockValue": 229622,
+    "dailyPnL": 29776.777389764167,
     "totalPnL": 24104.66,
-    "dailyReturn": 0.38,
+    "dailyReturn": 7.557967838397972,
     "totalReturn": 6.11
   }
 }

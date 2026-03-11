@@ -278,25 +278,26 @@
             '2026-02-01': 382000,
             '2026-02-15': 388000,
             '2026-03-01': 391000,
-            '2026-03-10': 394589    // 最新数据
+            '2026-03-10': 394589,   // 昨日数据
+            '2026-03-11': 423755    // 今日数据
         };
         
         // 当前持仓数据（真实）
         let portfolioData = {
-            date: '2026-03-10',
-            totalAssets: 394589.49,
-            dailyPnL: 1512.86,
-            totalPnL: 24104.66,
+            date: '2026-03-11',
+            totalAssets: 423755.40,
+            dailyPnL: 29776.78,
+            totalPnL: 53881.44,
             stocks: [
-                { name: "比亚迪", code: "002594", shares: 2100, price: 96.60, marketValue: 202860, dailyChange: 0, totalPnL: -14772.57 },
-                { name: "电网设备", code: "601669", shares: 5400, price: 2.115, marketValue: 11421, dailyChange: 0, totalPnL: 1261.80 },
-                { name: "中科曙光", code: "603019", shares: 100, price: 88.19, marketValue: 8819, dailyChange: 0, totalPnL: -7724.15 },
-                { name: "洛阳钼业", code: "603993", shares: 300, price: 21.74, marketValue: 6522, dailyChange: 0, totalPnL: 12676.30 }
+                { name: "比亚迪", code: "002594", shares: 2100, price: 99.22, marketValue: 208362, dailyChange: 2.71, totalPnL: -11712.57 },
+                { name: "电网设备", code: "601669", shares: 5400, price: 6.38, marketValue: 34452, dailyChange: 201.65, totalPnL: 24292.80 },
+                { name: "中科曙光", code: "603019", shares: 100, price: 88.05, marketValue: 8805, dailyChange: -0.16, totalPnL: -7738.15 },
+                { name: "洛阳钼业", code: "603993", shares: 300, price: 21.48, marketValue: 6444, dailyChange: -1.20, totalPnL: 12598.30 }
             ],
             funds: [
-                { name: "嘉实新能源新材料", code: "003984", marketValue: 46090.54, dailyPnL: 859.37, totalPnL: 20385.88 },
-                { name: "华夏人工智能ETF", code: "008586", marketValue: 22473.41, dailyPnL: 432.15, totalPnL: 8473.41 },
-                { name: "嘉实美国成长", code: "000043", marketValue: 37099.96, dailyPnL: 737.84, totalPnL: 4099.96 },
+                { name: "嘉实新能源新材料", code: "003984", marketValue: 47270.39, dailyPnL: 1179.85, totalPnL: 21565.73 },
+                { name: "华夏人工智能ETF", code: "008586", marketValue: 22217.83, dailyPnL: -255.58, totalPnL: 8217.83 },
+                { name: "嘉实美国成长", code: "000043", marketValue: 36769.78, dailyPnL: -330.18, totalPnL: 3769.78 },
                 { name: "华宝海外新能源汽车", code: "007904", marketValue: 17076.65, dailyPnL: 401.69, totalPnL: 1076.65 },
                 { name: "华夏中证红利质量", code: "016440", marketValue: 11257.07, dailyPnL: 207.80, totalPnL: 665.18 },
                 { name: "华泰柏瑞红利低波动", code: "007467", marketValue: 10166.89, dailyPnL: -28.86, totalPnL: -260.88 },
