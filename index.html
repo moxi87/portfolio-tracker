@@ -244,10 +244,31 @@
             return `交易中`;
         }
         
+        /**
+         * 获取市场状态
+         */
+        function getMarketStatus() {
+            if (isMarketOpen()) {
+                return { open: true, text: '交易中' };
+            }
+            
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const time = hours * 100 + minutes;
+            
+            if (time < 930) return { open: false, text: '开盘前' };
+            if (time < 1300) return { open: false, text: '午间休市' };
+            if (time >= 1500) return { open: false, text: '已收盘' };
+            return { open: false, text: '休市' };
+        }
+        
         // ============================================
-        // 初始化
         // ============================================
         function init() {
+            // 从本地存储加载数据（优先）
+            loadFromLocalStorage();
+            
             checkMarketStatus();
             renderData();
             renderPerformanceChart();
@@ -258,6 +279,30 @@
             
             // 每分钟检查一次市场状态
             setInterval(checkMarketStatus, 60000);
+        }
+        
+        // ============================================
+        // 从本地存储加载数据
+        // ============================================
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('portfolio_data');
+                const savedHistory = localStorage.getItem('portfolio_history');
+                
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    // 合并保存的数据到 portfolioData
+                    Object.assign(portfolioData, parsed);
+                    console.log('已从本地存储加载持仓数据:', portfolioData.date);
+                }
+                
+                if (savedHistory) {
+                    const parsedHistory = JSON.parse(savedHistory);
+                    Object.assign(historicalData, parsedHistory);
+                }
+            } catch (e) {
+                console.error('加载本地数据失败:', e);
+            }
         }
         
         function checkMarketStatus() {
@@ -285,16 +330,32 @@
         // ============================================
         function renderData() {
             const data = portfolioData;
+            const marketStatus = getMarketStatus();
             
             document.getElementById('totalAssets').textContent = formatMoney(data.totalAssets);
             document.getElementById('totalAssets').classList.remove('loading');
             
-            document.getElementById('dailyPnL').textContent = (data.dailyPnL >= 0 ? '+' : '') + formatMoney(data.dailyPnL);
-            document.getElementById('dailyPnL').className = 'text-xl font-bold ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
-            document.getElementById('dailyPnL').classList.remove('loading');
+            // 非交易时间显示提示
+            const dailyPnLElement = document.getElementById('dailyPnL');
+            const dailyPercentElement = document.getElementById('dailyPercent');
             
-            document.getElementById('dailyPercent').textContent = formatPercent(data.dailyPnL / data.totalAssets * 100);
-            document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            if (!marketStatus.open) {
+                // 已收盘状态：显示昨日数据，并添加提示
+                dailyPnLElement.textContent = (data.dailyPnL >= 0 ? '+' : '') + formatMoney(data.dailyPnL);
+                dailyPnLElement.className = 'text-xl font-bold ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+                dailyPnLElement.classList.remove('loading');
+                
+                dailyPercentElement.textContent = formatPercent(data.dailyPnL / data.totalAssets * 100) + ' (昨日)';
+                dailyPercentElement.className = 'text-xs mt-1 text-gray-400';
+            } else {
+                // 交易中状态
+                dailyPnLElement.textContent = (data.dailyPnL >= 0 ? '+' : '') + formatMoney(data.dailyPnL);
+                dailyPnLElement.className = 'text-xl font-bold ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+                dailyPnLElement.classList.remove('loading');
+                
+                dailyPercentElement.textContent = formatPercent(data.dailyPnL / data.totalAssets * 100);
+                dailyPercentElement.className = 'text-xs mt-1 ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            }
             
             document.getElementById('totalPnL').textContent = (data.totalPnL >= 0 ? '+' : '') + formatMoney(data.totalPnL);
             document.getElementById('totalPnL').className = 'text-xl font-bold ' + (data.totalPnL >= 0 ? 'trend-up' : 'trend-down');
