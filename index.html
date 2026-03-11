@@ -26,6 +26,10 @@
         .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        /* 下拉菜单动画 */
+        #menuDropdown { transition: opacity 0.2s, transform 0.2s; }
+        #menuDropdown:not(.hidden) { animation: slideDown 0.2s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen" id="body">
@@ -39,31 +43,54 @@
     </div>
 
     <nav class="glass sticky top-0 z-50 border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 py-3">
+        <div class="max-w-7xl mx-auto px-3 py-2">
             <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">P</div>
+                <!-- 左侧：Logo + 简化信息 -->
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">P</div>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-800">Portfolio Pro</h1>
-                        <div class="flex items-center gap-2 text-xs">
-                            <span id="connectionStatus" class="w-2 h-2 bg-green-500 rounded-full"></span>
-                            <span id="statusText" class="text-gray-500">已连接</span>
-                            <span class="text-gray-400">|</span>
-                            <span class="text-gray-500" id="lastUpdate">--</span>
-                            <span class="text-gray-400 ml-2">| 版本: </span>
-                            <span class="text-gray-500">v5.2.0</span>
+                        <h1 class="text-lg font-bold text-gray-800 leading-tight">Portfolio Pro</h1>
+                        <div class="flex items-center gap-1 text-[10px] text-gray-500">
+                            <span id="connectionStatus" class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                            <span id="statusText">已连接</span>
+                            <span class="text-gray-300">|</span>
+                            <span id="dataDate">--</span>
                         </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="syncData()" class="px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600">
-                        <i class="fas fa-sync mr-1"></i>同步
+                
+                <!-- 右侧：功能菜单 -->
+                <div class="flex items-center gap-1">
+                    <button onclick="toggleMenu()" class="p-2 rounded-lg hover:bg-gray-100" title="功能菜单">
+                        <i class="fas fa-bars text-gray-600"></i>
                     </button>
-                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100">
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100" title="切换主题">
                         <i class="fas fa-moon text-gray-600" id="themeIcon"></i>
                     </button>
                 </div>
             </div>
+        </div>
+        
+        <!-- 下拉菜单 -->
+        <div id="menuDropdown" class="hidden absolute right-4 top-14 glass rounded-lg shadow-lg border border-gray-200 py-2 w-48 z-50">
+            <div class="px-3 py-1 text-xs text-gray-400">功能菜单</div>
+            <button onclick="syncData(); toggleMenu();" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
+                <i class="fas fa-sync text-indigo-500"></i> 数据同步
+            </button>
+            <button onclick="showTradeLog(); toggleMenu();" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
+                <i class="fas fa-history text-blue-500"></i> 交易日志
+            </button>
+            <button onclick="showSentiment(); toggleMenu();" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
+                <i class="fas fa-heartbeat text-red-500"></i> 情绪仪表盘
+            </button>
+            <button onclick="showNews(); toggleMenu();" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
+                <i class="fas fa-newspaper text-green-500"></i> 持仓新闻
+            </button>
+            <button onclick="showBenchmark(); toggleMenu();" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
+                <i class="fas fa-chart-area text-purple-500"></i> 收益对标
+            </button>
+            <div class="border-t border-gray-200 my-1"></div>
+            <div class="px-4 py-1 text-xs text-gray-400">版本: v5.5.0</div>
         </div>
     </nav>
 
@@ -120,6 +147,96 @@
             </div>
         </div>
 
+        <!-- 情绪仪表盘 -->
+        <div id="sentimentPanel" class="glass rounded-xl p-4 mb-4 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-gray-700"><i class="fas fa-heartbeat text-red-500 mr-2"></i>市场情绪仪表盘</h3>
+                <button onclick="hidePanel('sentimentPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="sentimentDashboard">
+                <!-- 动态生成 -->
+            </div>
+            <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                <div class="text-sm font-medium mb-1">综合情绪指数</div>
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="sentimentBar" class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 transition-all" style="width: 50%"></div>
+                    </div>
+                    <span id="sentimentText" class="text-sm font-bold">中性</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 交易日志 -->
+        <div id="tradeLogPanel" class="glass rounded-xl p-4 mb-4 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-gray-700"><i class="fas fa-history text-blue-500 mr-2"></i>交易日志</h3>
+                <div class="flex gap-2">
+                    <button onclick="showTradeLogForm()" class="px-3 py-1 bg-indigo-500 text-white rounded text-sm"><i class="fas fa-plus mr-1"></i>添加</button>
+                    <button onclick="hidePanel('tradeLogPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div id="tradeLogList" class="space-y-2 max-h-64 overflow-y-auto">
+                <!-- 动态生成 -->
+            </div>
+            <!-- 添加交易表单 -->
+            <div id="tradeLogForm" class="hidden mt-3 p-3 border rounded-lg">
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input type="date" id="tradeDate" class="px-3 py-2 border rounded text-sm">
+                    <select id="tradeType" class="px-3 py-2 border rounded text-sm">
+                        <option value="buy">买入</option>
+                        <option value="sell">卖出</option>
+                    </select>
+                </div>
+                <input type="text" id="tradeName" placeholder="标的名称" class="w-full px-3 py-2 border rounded text-sm mb-2">
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input type="number" id="tradePrice" placeholder="价格" class="px-3 py-2 border rounded text-sm">
+                    <input type="number" id="tradeShares" placeholder="数量" class="px-3 py-2 border rounded text-sm">
+                </div>
+                <input type="text" id="tradeReason" placeholder="交易理由（可选）" class="w-full px-3 py-2 border rounded text-sm mb-2">
+                <div class="flex gap-2">
+                    <button onclick="addTradeLog()" class="flex-1 px-3 py-2 bg-green-500 text-white rounded text-sm">保存</button>
+                    <button onclick="hideTradeLogForm()" class="px-3 py-2 bg-gray-200 text-gray-600 rounded text-sm">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 持仓新闻 -->
+        <div id="newsPanel" class="glass rounded-xl p-4 mb-4 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-gray-700"><i class="fas fa-newspaper text-green-500 mr-2"></i>持仓新闻</h3>
+                <button onclick="hidePanel('newsPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="newsList" class="space-y-3 max-h-64 overflow-y-auto">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 收益对标 -->
+        <div id="benchmarkPanel" class="glass rounded-xl p-4 mb-4 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-gray-700"><i class="fas fa-chart-area text-purple-500 mr-2"></i>收益对标</h3>
+                <button onclick="hidePanel('benchmarkPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="h-48">
+                <canvas id="benchmarkChart"></canvas>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mt-3">
+                <div class="text-center p-2 bg-gray-50 rounded">
+                    <div class="text-xs text-gray-500">我的组合</div>
+                    <div id="myReturn" class="text-lg font-bold text-indigo-600">--</div>
+                </div>
+                <div class="text-center p-2 bg-gray-50 rounded">
+                    <div class="text-xs text-gray-500">沪深300</div>
+                    <div id="hs300Return" class="text-lg font-bold text-gray-600">--</div>
+                </div>
+                <div class="text-center p-2 bg-gray-50 rounded">
+                    <div class="text-xs text-gray-500">超额收益</div>
+                    <div id="excessReturn" class="text-lg font-bold">--</div>
+                </div>
+            </div>
+        </div>
+
         <!-- 更新数据表单 -->
         <div class="glass rounded-xl p-4 mb-4">
             <div class="flex justify-between items-center mb-3">
@@ -152,7 +269,7 @@
         // ============================================
         // 配置与数据
         // ============================================
-        const APP_VERSION = '5.4.0';
+        const APP_VERSION = '5.5.0';
         
         // 真实历史数据（从2026年1月1日开始）
         const historicalData = {
@@ -924,6 +1041,250 @@
             body.classList.toggle('dark-mode');
             const isDark = body.classList.contains('dark-mode');
             document.getElementById('themeIcon').className = isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-gray-600';
+        }
+        
+        // ============================================
+        // 菜单和面板控制
+        // ============================================
+        function toggleMenu() {
+            const menu = document.getElementById('menuDropdown');
+            menu.classList.toggle('hidden');
+        }
+        
+        function hidePanel(panelId) {
+            document.getElementById(panelId).classList.add('hidden');
+        }
+        
+        function showPanel(panelId) {
+            // 隐藏其他面板
+            ['sentimentPanel', 'tradeLogPanel', 'newsPanel', 'benchmarkPanel'].forEach(id => {
+                if (id !== panelId) document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(panelId).classList.remove('hidden');
+        }
+        
+        // ============================================
+        // 情绪仪表盘
+        // ============================================
+        function showSentiment() {
+            showPanel('sentimentPanel');
+            renderSentimentDashboard();
+        }
+        
+        function renderSentimentDashboard() {
+            const indicators = [
+                { name: '上证指数', value: 52, status: 'neutral' },
+                { name: '创业板', value: 45, status: 'fear' },
+                { name: '北向资金', value: 65, status: 'greed' },
+                { name: '融资融券', value: 48, status: 'neutral' },
+                { name: 'VIX指数', value: 35, status: 'fear' }
+            ];
+            
+            const html = indicators.map(ind => {
+                let color = 'bg-gray-400';
+                let text = '中性';
+                if (ind.value >= 60) { color = 'bg-red-500'; text = '贪婪'; }
+                else if (ind.value <= 40) { color = 'bg-green-500'; text = '恐惧'; }
+                
+                return `
+                    <div class="text-center p-2 bg-gray-50 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-1">${ind.name}</div>
+                        <div class="text-lg font-bold ${color.replace('bg-', 'text-')}">${ind.value}</div>
+                        <div class="text-[10px] ${color.replace('bg-', 'text-')}">${text}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('sentimentDashboard').innerHTML = html;
+            
+            // 计算综合指数
+            const avg = indicators.reduce((sum, ind) => sum + ind.value, 0) / indicators.length;
+            document.getElementById('sentimentBar').style.width = avg + '%';
+            
+            let sentimentText = '中性';
+            if (avg >= 60) sentimentText = '贪婪';
+            else if (avg <= 40) sentimentText = '恐惧';
+            document.getElementById('sentimentText').textContent = sentimentText;
+        }
+        
+        // ============================================
+        // 交易日志
+        // ============================================
+        let tradeLogs = JSON.parse(localStorage.getItem('trade_logs') || '[]');
+        
+        function showTradeLog() {
+            showPanel('tradeLogPanel');
+            renderTradeLog();
+        }
+        
+        function renderTradeLog() {
+            if (tradeLogs.length === 0) {
+                document.getElementById('tradeLogList').innerHTML = '<p class="text-gray-500 text-center py-4">暂无交易记录</p>';
+                return;
+            }
+            
+            const html = tradeLogs.slice().reverse().map(log => `
+                <div class="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                    <div>
+                        <div class="font-medium text-sm">${log.name} <span class="text-xs ${log.type === 'buy' ? 'text-red-500' : 'text-green-500'}">${log.type === 'buy' ? '买入' : '卖出'}</span></div>
+                        <div class="text-xs text-gray-500">${log.date} · ${log.shares}股 · ¥${log.price}</div>
+                        ${log.reason ? `<div class="text-xs text-gray-400 mt-1">理由: ${log.reason}</div>` : ''}
+                    </div>
+                    <button onclick="deleteTradeLog('${log.id}')" class="text-gray-400 hover:text-red-500"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('');
+            
+            document.getElementById('tradeLogList').innerHTML = html;
+        }
+        
+        function showTradeLogForm() {
+            document.getElementById('tradeLogForm').classList.remove('hidden');
+            document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
+        }
+        
+        function hideTradeLogForm() {
+            document.getElementById('tradeLogForm').classList.add('hidden');
+        }
+        
+        function addTradeLog() {
+            const log = {
+                id: Date.now().toString(),
+                date: document.getElementById('tradeDate').value,
+                type: document.getElementById('tradeType').value,
+                name: document.getElementById('tradeName').value,
+                price: parseFloat(document.getElementById('tradePrice').value),
+                shares: parseInt(document.getElementById('tradeShares').value),
+                reason: document.getElementById('tradeReason').value
+            };
+            
+            if (!log.date || !log.name || !log.price || !log.shares) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            tradeLogs.push(log);
+            localStorage.setItem('trade_logs', JSON.stringify(tradeLogs));
+            
+            hideTradeLogForm();
+            renderTradeLog();
+            
+            // 清空表单
+            document.getElementById('tradeName').value = '';
+            document.getElementById('tradePrice').value = '';
+            document.getElementById('tradeShares').value = '';
+            document.getElementById('tradeReason').value = '';
+        }
+        
+        function deleteTradeLog(id) {
+            if (confirm('确定删除这条记录？')) {
+                tradeLogs = tradeLogs.filter(l => l.id !== id);
+                localStorage.setItem('trade_logs', JSON.stringify(tradeLogs));
+                renderTradeLog();
+            }
+        }
+        
+        // ============================================
+        // 持仓新闻
+        // ============================================
+        function showNews() {
+            showPanel('newsPanel');
+            renderNews();
+        }
+        
+        function renderNews() {
+            // 模拟持仓相关新闻
+            const news = [
+                { title: '比亚迪发布2月销量数据，同比增长55%', source: '财联社', time: '2小时前', sentiment: 'positive' },
+                { title: '新能源板块早盘活跃，电网设备领涨', source: '证券时报', time: '4小时前', sentiment: 'positive' },
+                { title: '中科曙光：公司服务器订单充足', source: '公司公告', time: '昨天', sentiment: 'neutral' },
+                { title: '洛阳钼业：钴镍价格震荡整理', source: '行业研究', time: '昨天', sentiment: 'neutral' },
+                { title: '人工智能ETF资金持续流入', source: '基金观察', time: '2天前', sentiment: 'positive' }
+            ];
+            
+            const html = news.map(n => {
+                const sentimentColor = n.sentiment === 'positive' ? 'text-red-500' : (n.sentiment === 'negative' ? 'text-green-500' : 'text-gray-500');
+                const sentimentIcon = n.sentiment === 'positive' ? '↑' : (n.sentiment === 'negative' ? '↓' : '→');
+                
+                return `
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <div class="font-medium text-sm mb-1">${n.title}</div>
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>${n.source} · ${n.time}</span>
+                            <span class="${sentimentColor}">${sentimentIcon} ${n.sentiment === 'positive' ? '利好' : (n.sentiment === 'negative' ? '利空' : '中性')}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('newsList').innerHTML = html;
+        }
+        
+        // ============================================
+        // 收益对标
+        // ============================================
+        let benchmarkChart = null;
+        
+        function showBenchmark() {
+            showPanel('benchmarkPanel');
+            renderBenchmarkChart();
+        }
+        
+        function renderBenchmarkChart() {
+            const ctx = document.getElementById('benchmarkChart').getContext('2d');
+            if (benchmarkChart) benchmarkChart.destroy();
+            
+            // 模拟沪深300数据
+            const hs300Data = [370000, 372000, 378000, 381000, 385000, 389000];
+            const myData = Object.values(historicalData);
+            const labels = Object.keys(historicalData).map(d => d.slice(5)); // 取 MM-DD
+            
+            const myReturn = ((myData[myData.length - 1] - myData[0]) / myData[0] * 100).toFixed(2);
+            const hs300Return = ((hs300Data[hs300Data.length - 1] - hs300Data[0]) / hs300Data[0] * 100).toFixed(2);
+            const excessReturn = (myReturn - hs300Return).toFixed(2);
+            
+            document.getElementById('myReturn').textContent = (myReturn > 0 ? '+' : '') + myReturn + '%';
+            document.getElementById('myReturn').className = 'text-lg font-bold ' + (myReturn >= 0 ? 'text-red-500' : 'text-green-500');
+            
+            document.getElementById('hs300Return').textContent = (hs300Return > 0 ? '+' : '') + hs300Return + '%';
+            document.getElementById('hs300Return').className = 'text-lg font-bold ' + (hs300Return >= 0 ? 'text-red-500' : 'text-green-500');
+            
+            document.getElementById('excessReturn').textContent = (excessReturn > 0 ? '+' : '') + excessReturn + '%';
+            document.getElementById('excessReturn').className = 'text-lg font-bold ' + (excessReturn >= 0 ? 'text-red-500' : 'text-green-500');
+            
+            benchmarkChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '我的组合',
+                            data: myData,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99,102,241,0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: '沪深300',
+                            data: hs300Data,
+                            borderColor: '#9ca3af',
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, position: 'top' } },
+                    scales: {
+                        y: {
+                            ticks: { callback: v => '¥' + (v/10000).toFixed(1) + '万' }
+                        }
+                    }
+                }
+            });
         }
         
         // ============================================
