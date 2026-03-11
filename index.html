@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="专业持仓分析系统 - 真实数据，严禁虚拟">
-    <title>Portfolio Pro v5.2 | 真实数据版</title>
+    <title>Portfolio Pro v5.5 | 持仓分析系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -406,19 +406,36 @@
                 const savedData = localStorage.getItem('portfolio_data');
                 const savedHistory = localStorage.getItem('portfolio_history');
                 
+                console.log('检查本地存储:', { savedData: !!savedData, savedHistory: !!savedHistory });
+                
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    // 合并保存的数据到 portfolioData
-                    Object.assign(portfolioData, parsed);
-                    console.log('已从本地存储加载持仓数据:', portfolioData.date);
+                    // 深度合并，确保数组数据也被正确加载
+                    portfolioData.date = parsed.date || portfolioData.date;
+                    portfolioData.totalAssets = parsed.totalAssets !== undefined ? parsed.totalAssets : portfolioData.totalAssets;
+                    portfolioData.dailyPnL = parsed.dailyPnL !== undefined ? parsed.dailyPnL : portfolioData.dailyPnL;
+                    portfolioData.totalPnL = parsed.totalPnL !== undefined ? parsed.totalPnL : portfolioData.totalPnL;
+                    
+                    // 合并股票和基金数组
+                    if (parsed.stocks && parsed.stocks.length > 0) {
+                        portfolioData.stocks = parsed.stocks;
+                    }
+                    if (parsed.funds && parsed.funds.length > 0) {
+                        portfolioData.funds = parsed.funds;
+                    }
+                    
+                    console.log('✅ 已从本地存储加载持仓数据:', portfolioData.date, '总资产:', portfolioData.totalAssets);
+                } else {
+                    console.log('ℹ️ 未找到本地存储数据，使用默认数据');
                 }
                 
                 if (savedHistory) {
                     const parsedHistory = JSON.parse(savedHistory);
                     Object.assign(historicalData, parsedHistory);
+                    console.log('✅ 已加载历史数据');
                 }
             } catch (e) {
-                console.error('加载本地数据失败:', e);
+                console.error('❌ 加载本地数据失败:', e);
             }
         }
         
