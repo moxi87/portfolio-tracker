@@ -89,8 +89,11 @@
             <button onclick="showBenchmark(); toggleMenu();" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
                 <i class="fas fa-chart-area text-purple-500"></i> 收益对标
             </button>
+            <button onclick="showHoldingTrend(); toggleMenu();" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
+                <i class="fas fa-chart-line text-orange-500"></i> 持仓走势
+            </button>
             <div class="border-t border-gray-200 my-1"></div>
-            <div class="px-4 py-1 text-xs text-gray-400">版本: v5.5.0</div>
+            <div class="px-4 py-1 text-xs text-gray-400">版本: v5.6.0</div>
         </div>
     </nav>
 
@@ -233,6 +236,48 @@
                 <div class="text-center p-2 bg-gray-50 rounded">
                     <div class="text-xs text-gray-500">超额收益</div>
                     <div id="excessReturn" class="text-lg font-bold">--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 持仓走势 -->
+        <div id="holdingTrendPanel" class="glass rounded-xl p-4 mb-4 hidden">
+            <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-gray-700"><i class="fas fa-chart-line text-orange-500 mr-2"></i>持仓走势</h3>
+                    <select id="holdingSelect" onchange="changeHolding()" class="px-2 py-1 border rounded text-sm">
+                        <option value="">选择持仓</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="changeHoldingPeriod('1M')" class="px-2 py-1 text-xs rounded bg-indigo-500 text-white" id="btn-1M">1月</button>
+                    <button onclick="changeHoldingPeriod('3M')" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-600" id="btn-3M">3月</button>
+                    <button onclick="changeHoldingPeriod('6M')" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-600" id="btn-6M">6月</button>
+                    <button onclick="changeHoldingPeriod('1Y')" class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-600" id="btn-1Y">1年</button>
+                    <button onclick="hidePanel('holdingTrendPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="h-48 md:h-64">
+                <canvas id="holdingTrendChart"></canvas>
+            </div>
+            <div id="holdingInfo" class="mt-3 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-4 gap-2 text-center">
+                    <div>
+                        <div class="text-xs text-gray-500">现价</div>
+                        <div id="holdingPrice" class="text-lg font-bold">--</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">涨跌幅</div>
+                        <div id="holdingChange" class="text-lg font-bold">--</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">最高</div>
+                        <div id="holdingHigh" class="text-lg font-bold text-red-500">--</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">最低</div>
+                        <div id="holdingLow" class="text-lg font-bold text-green-500">--</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1506,6 +1551,189 @@
                     }
                 }
             });
+        }
+        
+        // ============================================
+        // 持仓走势
+        // ============================================
+        let holdingTrendChart = null;
+        let currentHolding = null;
+        let currentHoldingPeriod = '1M';
+        
+        function showHoldingTrend() {
+            showPanel('holdingTrendPanel');
+            populateHoldingSelect();
+            // 默认选中第一个持仓
+            const allHoldings = [...portfolioData.stocks, ...portfolioData.funds];
+            if (allHoldings.length > 0) {
+                currentHolding = allHoldings[0];
+                document.getElementById('holdingSelect').value = currentHolding.code;
+                renderHoldingTrendChart();
+            }
+        }
+        
+        function populateHoldingSelect() {
+            const select = document.getElementById('holdingSelect');
+            select.innerHTML = '<option value="">选择持仓</option>';
+            
+            // 添加股票
+            if (portfolioData.stocks && portfolioData.stocks.length > 0) {
+                const optGroup = document.createElement('optgroup');
+                optGroup.label = '股票';
+                portfolioData.stocks.forEach(s => {
+                    const option = document.createElement('option');
+                    option.value = s.code;
+                    option.textContent = `${s.name} (${s.code})`;
+                    optGroup.appendChild(option);
+                });
+                select.appendChild(optGroup);
+            }
+            
+            // 添加基金
+            if (portfolioData.funds && portfolioData.funds.length > 0) {
+                const optGroup = document.createElement('optgroup');
+                optGroup.label = '基金';
+                portfolioData.funds.forEach(f => {
+                    const option = document.createElement('option');
+                    option.value = f.code;
+                    option.textContent = `${f.name} (${f.code})`;
+                    optGroup.appendChild(option);
+                });
+                select.appendChild(optGroup);
+            }
+        }
+        
+        function changeHolding() {
+            const code = document.getElementById('holdingSelect').value;
+            if (!code) return;
+            
+            const stock = portfolioData.stocks.find(s => s.code === code);
+            const fund = portfolioData.funds.find(f => f.code === code);
+            currentHolding = stock || fund;
+            
+            if (currentHolding) {
+                renderHoldingTrendChart();
+            }
+        }
+        
+        function changeHoldingPeriod(period) {
+            currentHoldingPeriod = period;
+            
+            // 更新按钮样式
+            ['1M', '3M', '6M', '1Y'].forEach(p => {
+                const btn = document.getElementById('btn-' + p);
+                if (p === period) {
+                    btn.className = 'px-2 py-1 text-xs rounded bg-indigo-500 text-white';
+                } else {
+                    btn.className = 'px-2 py-1 text-xs rounded bg-gray-200 text-gray-600';
+                }
+            });
+            
+            if (currentHolding) {
+                renderHoldingTrendChart();
+            }
+        }
+        
+        async function renderHoldingTrendChart() {
+            if (!currentHolding) return;
+            
+            const ctx = document.getElementById('holdingTrendChart').getContext('2d');
+            if (holdingTrendChart) holdingTrendChart.destroy();
+            
+            // 获取历史数据（模拟数据，实际应从API获取）
+            const historyData = await fetchHoldingHistory(currentHolding.code, currentHoldingPeriod);
+            
+            // 更新信息面板
+            document.getElementById('holdingPrice').textContent = '¥' + (currentHolding.price || currentHolding.marketValue / (currentHolding.shares || 1)).toFixed(2);
+            
+            const changePercent = historyData.changePercent || 0;
+            const changeEl = document.getElementById('holdingChange');
+            changeEl.textContent = (changePercent >= 0 ? '+' : '') + changePercent.toFixed(2) + '%';
+            changeEl.className = 'text-lg font-bold ' + (changePercent >= 0 ? 'trend-up' : 'trend-down');
+            
+            document.getElementById('holdingHigh').textContent = '¥' + historyData.high.toFixed(2);
+            document.getElementById('holdingLow').textContent = '¥' + historyData.low.toFixed(2);
+            
+            holdingTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: historyData.labels,
+                    datasets: [{
+                        label: currentHolding.name,
+                        data: historyData.prices,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return currentHolding.name + ': ¥' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return '¥' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        async function fetchHoldingHistory(code, period) {
+            // 这里应该从API获取真实历史数据
+            // 目前使用模拟数据展示功能
+            
+            const days = period === '1M' ? 30 : period === '3M' ? 90 : period === '6M' ? 180 : 365;
+            const currentPrice = currentHolding.price || currentHolding.marketValue / (currentHolding.shares || 1);
+            
+            // 生成模拟历史数据
+            const labels = [];
+            const prices = [];
+            let high = currentPrice;
+            let low = currentPrice;
+            
+            for (let i = days; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }));
+                
+                // 模拟价格波动（随机游走）
+                const volatility = 0.02; // 2% 日波动
+                const change = (Math.random() - 0.5) * 2 * volatility;
+                const price = currentPrice * (1 + change * (i / days));
+                prices.push(price);
+                
+                if (price > high) high = price;
+                if (price < low) low = price;
+            }
+            
+            const startPrice = prices[0];
+            const changePercent = ((currentPrice - startPrice) / startPrice) * 100;
+            
+            return {
+                labels,
+                prices,
+                high,
+                low,
+                changePercent
+            };
         }
         
         // ============================================
