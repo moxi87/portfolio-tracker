@@ -2,7 +2,7 @@ name: Daily Portfolio Update
 
 on:
   schedule:
-    # 每天 20:30 运行 (UTC 12:30)
+    # 每天 20:30 运行 (UTC 12:30)，工作日
     - cron: '30 12 * * 1-5'
   workflow_dispatch:  # 支持手动触发
 
@@ -29,18 +29,146 @@ jobs:
         let data = { lastUpdate: new Date().toISOString().split('T')[0], funds: [], stocks: [] };
         try {
           data = JSON.parse(fs.readFileSync('portfolio-data.json', 'utf8'));
-        } catch(e) {}
+        } catch(e) {
+          console.log('No existing data found, using defaults');
+        }
         
-        // 更新时间戳
         const today = new Date().toISOString().split('T')[0];
         data.lastUpdate = today;
         
-        // 这里可以添加真实数据抓取逻辑
-        // 目前先更新时间戳，后续可以对接新浪/东方财富API
-        console.log('Data updated at:', today);
+        // 获取股票实时行情（新浪财经）
+        async function fetchStockQuote(code) {
+          return new Promise((resolve) => {
+            const isSh = code.startsWith('6');
+            const sinaCode = isSh ? `sh${code}` : `sz${code}`;
+            const url = `https://hq.sinajs.cn/list=${sinaCode}`;
+            
+            https.get(url, {
+              headers: { 'Referer': 'https://finance.sina.com.cn' }
+            }, (res) => {
+              let data = '';
+              res.on('data', chunk => data += chunk);
+              res.on('end', () => {
+                try {
+                  const match = data.match(/var hq_str_[^=]+="([^"]+)"/);
+                  if (!match || !match[1]) {
+                    resolve(null);
+                    return;
+                  }
+                  const parts = match[1].split(',');
+                  if (parts.length < 33) {
+                    resolve(null);
+                    return;
+                  }
+                  resolve({
+                    name: parts[0],
+                    price: parseFloat(parts[3]),
+                    prevClose: parseFloat(parts[2]),
+                    open: parseFloat(parts[1]),
+                    high: parseFloat(parts[4]),
+                    low: parseFloat(parts[5])
+                  });
+                } catch (e) {
+                  resolve(null);
+                }
+              });
+            }).on('error', () => resolve(null));
+          });
+        }
         
-        fs.writeFileSync('portfolio-data.json', JSON.stringify(data, null, 2));
-        console.log('Portfolio data updated successfully');
+        // 获取基金净值（天天基金）
+        async function fetchFundNav(code) {
+          return new Promise((resolve) => {
+            const url = `https://fundgz.1234567.com.cn/js/${code}.js?rt=${Date.now()}`;
+            
+            https.get(url, (res) => {
+              let data = '';
+              res.on('data', chunk => data += chunk);
+              res.on('end', () => {
+                try {
+                  const match = data.match(/jsonpgz\(([^)]+)\)/);
+                  if (!match) {
+                    resolve(null);
+                    return;
+                  }
+                  const json = JSON.parse(match[1]);
+                  resolve({
+                    name: json.name,
+                    nav: parseFloat(json.dwjz),
+                    estimateNav: parseFloat(json.gsz),
+                    changePercent: parseFloat(json.gszzl)
+                  });
+                } catch (e) {
+                  resolve(null);
+                }
+              });
+            }).on('error', () => resolve(null));
+          });
+        }
+        
+        async function updateData() {
+          let totalDailyPnL = 0;
+          let totalAssets = 0;
+          
+          // 更新股票数据
+          if (data.stocks && data.stocks.length > 0) {
+            for (let stock of data.stocks) {
+              const quote = await fetchStockQuote(stock.code);
+              if (quote && quote.price > 0) {
+                const prevPrice = stock.price || quote.prevClose;
+                const priceChange = quote.price - prevPrice;
+                stock.price = quote.price;
+                stock.marketValue = quote.price * stock.shares;
+                stock.dailyPnL = priceChange * stock.shares;
+                totalDailyPnL += stock.dailyPnL;
+                console.log(`Updated ${stock.name}: ¥${quote.price.toFixed(2)} (${priceChange >= 0 ? '+' : ''}${(priceChange/prevPrice*100).toFixed(2)}%)`);
+              }
+              totalAssets += stock.marketValue || 0;
+            }
+          }
+          
+          // 更新基金数据
+          if (data.funds && data.funds.length > 0) {
+            for (let fund of data.funds) {
+              // 余额宝不需要更新
+              if (fund.code === 'YEB') {
+                totalAssets += fund.marketValue || 0;
+                continue;
+              }
+              
+              const nav = await fetchFundNav(fund.code);
+              if (nav && nav.estimateNav > 0) {
+                const shares = fund.marketValue / (fund.price || nav.nav);
+                const prevNav = fund.price || nav.nav;
+                const navChange = nav.estimateNav - prevNav;
+                fund.price = nav.estimateNav;
+                fund.dailyPnL = navChange * shares;
+                fund.marketValue = nav.estimateNav * shares;
+                totalDailyPnL += fund.dailyPnL;
+                console.log(`Updated ${fund.name}: ¥${nav.estimateNav.toFixed(4)} (${nav.changePercent >= 0 ? '+' : ''}${nav.changePercent}%)`);
+              }
+              totalAssets += fund.marketValue || 0;
+            }
+          }
+          
+          // 更新汇总数据
+          data.summary = data.summary || {};
+          data.summary.totalAssets = totalAssets;
+          data.summary.dailyPnL = totalDailyPnL;
+          data.summary.dailyReturn = (totalDailyPnL / (totalAssets - totalDailyPnL) * 100);
+          
+          console.log('\n=== 更新汇总 ===');
+          console.log(`总资产: ¥${totalAssets.toFixed(2)}`);
+          console.log(`今日盈亏: ¥${totalDailyPnL.toFixed(2)} (${data.summary.dailyReturn >= 0 ? '+' : ''}${data.summary.dailyReturn.toFixed(2)}%)`);
+          
+          fs.writeFileSync('portfolio-data.json', JSON.stringify(data, null, 2));
+          console.log('\n✅ Portfolio data updated successfully at', new Date().toLocaleString('zh-CN'));
+        }
+        
+        updateData().catch(e => {
+          console.error('Update failed:', e);
+          process.exit(1);
+        });
         EOF
         
         node update-data.js
@@ -54,7 +182,7 @@ jobs:
         git config --local user.email "kimi-auto@openclaw.ai"
         git config --local user.name "Kimi Auto Update"
         git add portfolio-data.json LAST_UPDATE.txt
-        git diff --staged --quiet || git commit -m "Auto update: $(date +'%Y-%m-%d %H:%M')"
+        git diff --staged --quiet || git commit -m "Auto update: $(date +'%Y-%m-%d %H:%M') - Daily market data"
         
     - name: Push changes
       uses: ad-m/github-push-action@master
