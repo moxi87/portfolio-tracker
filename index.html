@@ -271,40 +271,17 @@
         // ============================================
         const APP_VERSION = '5.5.0';
         
-        // 真实历史数据（从2026年1月1日开始）
-        const historicalData = {
-            '2026-01-01': 370000,  // 初始资产
-            '2026-01-15': 375000,
-            '2026-02-01': 382000,
-            '2026-02-15': 388000,
-            '2026-03-01': 391000,
-            '2026-03-10': 394589,   // 昨日数据
-            '2026-03-11': 423755    // 今日数据
-        };
+        // 真实历史数据（从JSON加载，默认为空）
+        const historicalData = {};
         
-        // 当前持仓数据（真实）
+        // 当前持仓数据（初始为空，从JSON加载）
         let portfolioData = {
-            date: '2026-03-11',
-            totalAssets: 423624.80,
-            dailyPnL: 29035.31,
-            totalPnL: 53624.80,
-            stocks: [
-                { name: "比亚迪", code: "002594", shares: 2100, price: 99.22, marketValue: 208362, dailyChange: 2.71, totalPnL: -11712.57 },
-                { name: "电网设备", code: "601669", shares: 5400, price: 6.38, marketValue: 34452, dailyChange: 5.80, totalPnL: 24346.80 },
-                { name: "中科曙光", code: "603019", shares: 100, price: 88.05, marketValue: 8805, dailyChange: -0.16, totalPnL: -7738.15 },
-                { name: "洛阳钼业", code: "603993", shares: 300, price: 21.48, marketValue: 6444, dailyChange: -1.20, totalPnL: 12598.30 }
-            ],
-            funds: [
-                { name: "嘉实新能源新材料", code: "003984", marketValue: 47270.39, dailyPnL: 1179.85, totalPnL: 21565.73 },
-                { name: "华夏人工智能ETF", code: "008586", marketValue: 22217.83, dailyPnL: -255.58, totalPnL: 8217.83 },
-                { name: "嘉实美国成长", code: "000043", marketValue: 36769.78, dailyPnL: -330.18, totalPnL: 3769.78 },
-                { name: "华宝海外新能源汽车", code: "007904", marketValue: 17076.65, dailyPnL: 401.69, totalPnL: 1076.65 },
-                { name: "华夏中证红利质量", code: "016440", marketValue: 11257.07, dailyPnL: 207.80, totalPnL: 665.18 },
-                { name: "华泰柏瑞红利低波动", code: "007467", marketValue: 10166.89, dailyPnL: -28.86, totalPnL: -260.88 },
-                { name: "博时智选量化", code: "013231", marketValue: 9338.01, dailyPnL: 236.47, totalPnL: -374.33 },
-                { name: "华安恒生科技", code: "015283", marketValue: 10503.40, dailyPnL: 209.38, totalPnL: -1500.92 },
-                { name: "余额宝", code: "YEB", marketValue: 961.78, dailyPnL: 0.02, totalPnL: 98.33 }
-            ]
+            date: '',
+            totalAssets: 0,
+            dailyPnL: 0,
+            totalPnL: 0,
+            stocks: [],
+            funds: []
         };
         
         let currentPeriod = '1M';
@@ -387,43 +364,44 @@
         function init() {
             console.log('🚀 初始化开始...');
             
-            try {
-                // 从本地存储加载数据（优先）
+            // 先尝试从 JSON 文件加载最新数据
+            loadFromJSON().then(() => {
+                // 然后尝试从本地存储加载（用户手动修改的数据）
                 loadFromLocalStorage();
-            } catch (e) {
-                console.error('加载本地数据出错:', e);
-            }
-            
-            try {
-                checkMarketStatus();
-            } catch (e) {
-                console.error('检查市场状态出错:', e);
-            }
-            
-            try {
-                renderData();
-            } catch (e) {
-                console.error('渲染数据出错:', e);
-            }
-            
-            try {
-                renderPerformanceChart();
-            } catch (e) {
-                console.error('渲染图表出错:', e);
-            }
-            
-            try {
-                renderStocksTab();
-            } catch (e) {
-                console.error('渲染持仓表格出错:', e);
-            }
-            
-            // 设置日期输入框为今天
-            try {
-                document.getElementById('updateDate').value = new Date().toISOString().split('T')[0];
-            } catch (e) {
-                console.error('设置日期出错:', e);
-            }
+                
+                try {
+                    checkMarketStatus();
+                } catch (e) {
+                    console.error('检查市场状态出错:', e);
+                }
+                
+                try {
+                    renderData();
+                } catch (e) {
+                    console.error('渲染数据出错:', e);
+                }
+                
+                try {
+                    renderPerformanceChart();
+                } catch (e) {
+                    console.error('渲染图表出错:', e);
+                }
+                
+                try {
+                    renderStocksTab();
+                } catch (e) {
+                    console.error('渲染持仓表格出错:', e);
+                }
+                
+                // 设置日期输入框为今天
+                try {
+                    document.getElementById('updateDate').value = new Date().toISOString().split('T')[0];
+                } catch (e) {
+                    console.error('设置日期出错:', e);
+                }
+                
+                console.log('✅ 初始化完成');
+            });
             
             // 每分钟检查一次市场状态
             setInterval(() => {
@@ -433,8 +411,66 @@
                     console.error('定时检查出错:', e);
                 }
             }, 60000);
-            
-            console.log('✅ 初始化完成');
+        }
+        
+        // ============================================
+        // 从 JSON 文件加载数据（优先）
+        // ============================================
+        async function loadFromJSON() {
+            try {
+                console.log('📡 正在从 portfolio-data.json 加载数据...');
+                const response = await fetch('portfolio-data.json?v=' + Date.now());
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                const data = await response.json();
+                
+                console.log('✅ 成功加载 JSON 数据:', data.lastUpdate);
+                
+                // 更新股票数据
+                if (data.stocks && Array.isArray(data.stocks) && data.stocks.length > 0) {
+                    portfolioData.stocks = data.stocks.map(s => ({
+                        name: s.name,
+                        code: s.code,
+                        shares: s.shares,
+                        price: s.price,
+                        marketValue: s.marketValue,
+                        dailyChange: s.dailyChange || 0,
+                        totalPnL: s.holdingPnL || s.totalPnL || 0
+                    }));
+                    console.log('✅ 已加载股票数据:', portfolioData.stocks.length, '条');
+                }
+                
+                // 更新基金数据
+                if (data.funds && Array.isArray(data.funds) && data.funds.length > 0) {
+                    portfolioData.funds = data.funds.map(f => ({
+                        name: f.name,
+                        code: f.code,
+                        marketValue: f.marketValue,
+                        dailyPnL: f.dailyPnL || 0,
+                        totalPnL: f.holdingPnL || f.totalPnL || 0
+                    }));
+                    console.log('✅ 已加载基金数据:', portfolioData.funds.length, '条');
+                }
+                
+                // 更新汇总数据
+                if (data.summary) {
+                    portfolioData.date = data.lastUpdate || new Date().toISOString().split('T')[0];
+                    portfolioData.totalAssets = data.summary.totalAssets || 0;
+                    portfolioData.dailyPnL = data.summary.dailyPnL || 0;
+                    portfolioData.totalPnL = data.summary.totalPnL || 0;
+                    console.log('✅ 已加载汇总数据:', portfolioData.date, '总资产:', portfolioData.totalAssets);
+                }
+                
+                // 更新历史数据
+                if (data.lastUpdate) {
+                    historicalData[data.lastUpdate] = data.summary?.totalAssets || 0;
+                }
+                
+            } catch (e) {
+                console.error('❌ 从 JSON 加载失败:', e);
+                console.log('ℹ️ 将使用默认数据');
+            }
         }
         
         // ============================================
@@ -519,10 +555,21 @@
                 const marketStatus = getMarketStatus();
                 console.log('市场状态:', marketStatus);
                 
+                // 如果没有数据，显示默认值
+                if (!data.totalAssets) {
+                    console.log('⚠️ 暂无数据，等待加载...');
+                    document.getElementById('totalAssets').textContent = '加载中...';
+                    document.getElementById('dailyPnL').textContent = '--';
+                    document.getElementById('totalPnL').textContent = '--';
+                    document.getElementById('dataDate').textContent = '--';
+                    return;
+                }
+                
                 const totalAssetsEl = document.getElementById('totalAssets');
                 const dailyPnLEl = document.getElementById('dailyPnL');
                 const dailyPercentEl = document.getElementById('dailyPercent');
                 const totalPnLEl = document.getElementById('totalPnL');
+                const dataDateEl = document.getElementById('dataDate');
                 
                 if (!totalAssetsEl || !dailyPnLEl || !totalPnLEl) {
                     console.error('❌ 找不到必要的DOM元素');
@@ -531,6 +578,7 @@
                 
                 totalAssetsEl.textContent = formatMoney(data.totalAssets);
                 totalAssetsEl.classList.remove('loading');
+                if (dataDateEl) dataDateEl.textContent = data.date || '--';
                 console.log('✅ 总资产渲染完成:', data.totalAssets);
                 
                 // 非交易时间显示提示
@@ -539,14 +587,14 @@
                     dailyPnLEl.className = 'text-xl font-bold ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
                     dailyPnLEl.classList.remove('loading');
                     
-                    dailyPercentEl.textContent = formatPercent(data.dailyPnL / data.totalAssets * 100) + ' (昨日)';
+                    dailyPercentEl.textContent = data.totalAssets > 0 ? formatPercent(data.dailyPnL / (data.totalAssets - data.dailyPnL) * 100) + ' (昨日)' : '--';
                     dailyPercentEl.className = 'text-xs mt-1 text-gray-400';
                 } else {
                     dailyPnLEl.textContent = (data.dailyPnL >= 0 ? '+' : '') + formatMoney(data.dailyPnL);
                     dailyPnLEl.className = 'text-xl font-bold ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
                     dailyPnLEl.classList.remove('loading');
                     
-                    dailyPercentEl.textContent = formatPercent(data.dailyPnL / data.totalAssets * 100);
+                    dailyPercentEl.textContent = data.totalAssets > 0 ? formatPercent(data.dailyPnL / (data.totalAssets - data.dailyPnL) * 100) : '--';
                     dailyPercentEl.className = 'text-xs mt-1 ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
                 }
                 
@@ -557,17 +605,6 @@
                 console.log('✅ 数据渲染完成');
             } catch (e) {
                 console.error('❌ renderData 出错:', e);
-                // 即使出错也要移除 loading 状态，显示默认数据
-                try {
-                    document.getElementById('totalAssets').textContent = '¥39.46万';
-                    document.getElementById('totalAssets').classList.remove('loading');
-                    document.getElementById('dailyPnL').textContent = '+¥1,513';
-                    document.getElementById('dailyPnL').classList.remove('loading');
-                    document.getElementById('totalPnL').textContent = '+¥2.41万';
-                    document.getElementById('totalPnL').classList.remove('loading');
-                } catch (e2) {
-                    console.error('❌ 恢复默认显示也失败了:', e2);
-                }
             }
         }
         
