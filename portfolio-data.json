@@ -1,6 +1,6 @@
 {
   "lastUpdate": "2026-03-11",
-  "lastSync": "22:40",
+  "lastSync": "22:55",
   "funds": [
     { "name": "嘉实新能源新材料股票A", "code": "003984", "marketValue": 47270.39, "dailyPnL": 1179.85, "holdingPnL": 21565.73, "returnRate": 83.85, "category": "新能源", "market": "A股", "price": 2.9648 },
     { "name": "华夏人工智能ETF联接D", "code": "008586", "marketValue": 22217.83, "dailyPnL": -255.58, "holdingPnL": 8217.83, "returnRate": 58.67, "category": "科技", "market": "A股", "price": 1.4083 },
@@ -10,21 +10,21 @@
     { "name": "华泰柏瑞中证红利低波动ETF联接C", "code": "007467", "marketValue": 10166.89, "dailyPnL": -28.86, "holdingPnL": -260.88, "returnRate": -2.47, "category": "红利", "market": "A股", "price": 1.6382 },
     { "name": "博时智选量化多因子股票C", "code": "013231", "marketValue": 9338.01, "dailyPnL": 236.47, "holdingPnL": -374.33, "returnRate": -3.27, "category": "量化", "market": "A股", "price": 1.1144 },
     { "name": "华安恒生科技ETF联接(QDII)C", "code": "015283", "marketValue": 10503.40, "dailyPnL": 0, "holdingPnL": -1500.92, "returnRate": -12.50, "category": "科技", "market": "港股" },
+    { "name": "电网设备ETF", "code": "159326", "marketValue": 11372.40, "shares": 5400, "price": 2.106, "dailyPnL": -48.60, "holdingPnL": 0, "returnRate": 0, "category": "ETF", "market": "A股" },
     { "name": "余额宝", "code": "YEB", "marketValue": 961.78, "dailyPnL": 0.02, "holdingPnL": 98.33, "returnRate": 0, "category": "现金", "market": "现金" }
   ],
   "stocks": [
     { "name": "比亚迪", "code": "002594", "marketValue": 208362.00, "shares": 2100, "price": 99.22, "cost": 103.635, "holdingPnL": -11712.57, "returnRate": -5.31, "category": "汽车", "market": "A股" },
-    { "name": "中国电建", "code": "601669", "marketValue": 34452.00, "shares": 5400, "price": 6.38, "cost": 1.881, "holdingPnL": 24346.80, "returnRate": 239.33, "category": "基建", "market": "A股" },
     { "name": "中科曙光", "code": "603019", "marketValue": 8805.00, "shares": 100, "price": 88.05, "cost": 165.432, "holdingPnL": -7738.15, "returnRate": -46.69, "category": "科技", "market": "A股" },
     { "name": "洛阳钼业", "code": "603993", "marketValue": 6444.00, "shares": 300, "price": 21.48, "cost": -20.514, "holdingPnL": 12598.30, "returnRate": 0, "category": "有色", "market": "A股" }
   ],
   "summary": {
-    "totalAssets": 423624.80,
-    "fundValue": 165561.80,
-    "stockValue": 258063.00,
-    "dailyPnL": 29035.31,
-    "totalPnL": 53624.80,
-    "dailyReturn": 7.36,
-    "totalReturn": 14.49
+    "totalAssets": 394846.60,
+    "fundValue": 177161.60,
+    "stockValue": 223611.00,
+    "dailyPnL": 960.90,
+    "totalPnL": 16609.56,
+    "dailyReturn": 0.24,
+    "totalReturn": 4.39
   }
 }
