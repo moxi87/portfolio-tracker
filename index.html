@@ -448,18 +448,27 @@
                 
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    // 深度合并，确保数组数据也被正确加载
-                    portfolioData.date = parsed.date || portfolioData.date;
-                    portfolioData.totalAssets = parsed.totalAssets !== undefined ? parsed.totalAssets : portfolioData.totalAssets;
-                    portfolioData.dailyPnL = parsed.dailyPnL !== undefined ? parsed.dailyPnL : portfolioData.dailyPnL;
-                    portfolioData.totalPnL = parsed.totalPnL !== undefined ? parsed.totalPnL : portfolioData.totalPnL;
+                    console.log('解析的本地数据:', parsed);
                     
-                    // 合并股票和基金数组
-                    if (parsed.stocks && parsed.stocks.length > 0) {
+                    // 更新基本字段
+                    if (parsed.date) portfolioData.date = parsed.date;
+                    if (parsed.totalAssets !== undefined) portfolioData.totalAssets = parsed.totalAssets;
+                    if (parsed.dailyPnL !== undefined) portfolioData.dailyPnL = parsed.dailyPnL;
+                    if (parsed.totalPnL !== undefined) portfolioData.totalPnL = parsed.totalPnL;
+                    
+                    // 重要：更新股票和基金数组（必须是有效的数组）
+                    if (parsed.stocks && Array.isArray(parsed.stocks) && parsed.stocks.length > 0) {
                         portfolioData.stocks = parsed.stocks;
+                        console.log('✅ 已加载股票数据:', parsed.stocks.length, '条');
+                    } else {
+                        console.log('ℹ️ 使用默认股票数据');
                     }
-                    if (parsed.funds && parsed.funds.length > 0) {
+                    
+                    if (parsed.funds && Array.isArray(parsed.funds) && parsed.funds.length > 0) {
                         portfolioData.funds = parsed.funds;
+                        console.log('✅ 已加载基金数据:', parsed.funds.length, '条');
+                    } else {
+                        console.log('ℹ️ 使用默认基金数据');
                     }
                     
                     console.log('✅ 已从本地存储加载持仓数据:', portfolioData.date, '总资产:', portfolioData.totalAssets);
@@ -474,6 +483,7 @@
                 }
             } catch (e) {
                 console.error('❌ 加载本地数据失败:', e);
+                // 出错时使用默认数据
             }
         }
         
@@ -656,77 +666,106 @@
         // 持仓表格
         // ============================================
         function renderStocksTab() {
-            const data = portfolioData;
-            
-            document.getElementById('tab-stocks').innerHTML = `
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-gray-500 border-b">
-                            <th class="pb-2">名称/代码</th>
-                            <th class="pb-2 text-right">持股</th>
-                            <th class="pb-2 text-right">现价</th>
-                            <th class="pb-2 text-right">市值</th>
-                            <th class="pb-2 text-right">盈亏</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.stocks.map(s => `
-                            <tr class="border-b border-gray-100">
-                                <td class="py-2">
-                                    <div class="font-medium">${s.name}</div>
-                                    <div class="text-xs text-gray-400">${s.code}</div>
-                                </td>
-                                <td class="py-2 text-right">${s.shares.toLocaleString()}</td>
-                                <td class="py-2 text-right font-mono">${s.price.toFixed(2)}</td>
-                                <td class="py-2 text-right">${formatMoney(s.marketValue)}</td>
-                                <td class="py-2 text-right ${s.totalPnL >= 0 ? 'trend-up' : 'trend-down'}">${s.totalPnL >= 0 ? '+' : ''}${formatMoney(s.totalPnL)}</td>
+            try {
+                const data = portfolioData;
+                
+                // 检查数据有效性
+                if (!data.stocks || !Array.isArray(data.stocks)) {
+                    console.warn('股票数据无效:', data.stocks);
+                    data.stocks = [];
+                }
+                if (!data.funds || !Array.isArray(data.funds)) {
+                    console.warn('基金数据无效:', data.funds);
+                    data.funds = [];
+                }
+                
+                const stocksTab = document.getElementById('tab-stocks');
+                const fundsTab = document.getElementById('tab-funds');
+                const historyTab = document.getElementById('tab-history');
+                
+                if (!stocksTab || !fundsTab || !historyTab) {
+                    console.error('找不到持仓表格DOM元素');
+                    return;
+                }
+                
+                stocksTab.innerHTML = `
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-gray-500 border-b">
+                                <th class="pb-2">名称/代码</th>
+                                <th class="pb-2 text-right">持股</th>
+                                <th class="pb-2 text-right">现价</th>
+                                <th class="pb-2 text-right">市值</th>
+                                <th class="pb-2 text-right">盈亏</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            
-            document.getElementById('tab-funds').innerHTML = `
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-gray-500 border-b">
-                            <th class="pb-2">名称/代码</th>
-                            <th class="pb-2 text-right">市值</th>
-                            <th class="pb-2 text-right">日收益</th>
-                            <th class="pb-2 text-right">持有收益</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.funds.map(f => `
-                            <tr class="border-b border-gray-100">
-                                <td class="py-2">
-                                    <div class="font-medium">${f.name}</div>
-                                    <div class="text-xs text-gray-400">${f.code}</div>
-                                </td>
-                                <td class="py-2 text-right">${formatMoney(f.marketValue)}</td>
-                                <td class="py-2 text-right ${f.dailyPnL >= 0 ? 'trend-up' : 'trend-down'}">${f.dailyPnL >= 0 ? '+' : ''}${formatMoney(f.dailyPnL)}</td>
-                                <td class="py-2 text-right ${f.totalPnL >= 0 ? 'trend-up' : 'trend-down'}">${f.totalPnL >= 0 ? '+' : ''}${formatMoney(f.totalPnL)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            
-            // 历史记录
-            const historyHtml = Object.entries(historicalData).map(([date, value]) => {
-                const prevValue = getPreviousValue(date);
-                const change = value - prevValue;
-                const changePercent = (change / prevValue * 100).toFixed(2);
-                return `
-                    <div class="flex justify-between py-2 border-b border-gray-100">
-                        <span class="text-gray-600">${date}</span>
-                        <span class="font-medium">${formatMoney(value)}</span>
-                        <span class="${change >= 0 ? 'trend-up' : 'trend-down'}">${change >= 0 ? '+' : ''}${changePercent}%</span>
-                    </div>
+                        </thead>
+                        <tbody>
+                            ${data.stocks.length > 0 ? data.stocks.map(s => `
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2">
+                                        <div class="font-medium">${s.name || '--'}</div>
+                                        <div class="text-xs text-gray-400">${s.code || '--'}</div>
+                                    </td>
+                                    <td class="py-2 text-right">${s.shares ? s.shares.toLocaleString() : '--'}</td>
+                                    <td class="py-2 text-right font-mono">${s.price ? s.price.toFixed(2) : '--'}</td>
+                                    <td class="py-2 text-right">${s.marketValue ? formatMoney(s.marketValue) : '--'}</td>
+                                    <td class="py-2 text-right ${(s.totalPnL || 0) >= 0 ? 'trend-up' : 'trend-down'}">${(s.totalPnL || 0) >= 0 ? '+' : ''}${s.totalPnL ? formatMoney(s.totalPnL) : '--'}</td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="5" class="py-4 text-center text-gray-500">暂无股票持仓</td></tr>'}
+                        </tbody>
+                    </table>
                 `;
-            }).reverse().join('');
-            
-            document.getElementById('tab-history').innerHTML = historyHtml || '<p class="text-gray-500 text-center py-4">暂无历史数据</p>';
+                
+                fundsTab.innerHTML = `
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-gray-500 border-b">
+                                <th class="pb-2">名称/代码</th>
+                                <th class="pb-2 text-right">市值</th>
+                                <th class="pb-2 text-right">日收益</th>
+                                <th class="pb-2 text-right">持有收益</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.funds.length > 0 ? data.funds.map(f => `
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2">
+                                        <div class="font-medium">${f.name || '--'}</div>
+                                        <div class="text-xs text-gray-400">${f.code || '--'}</div>
+                                    </td>
+                                    <td class="py-2 text-right">${f.marketValue ? formatMoney(f.marketValue) : '--'}</td>
+                                    <td class="py-2 text-right ${(f.dailyPnL || 0) >= 0 ? 'trend-up' : 'trend-down'}">${(f.dailyPnL || 0) >= 0 ? '+' : ''}${f.dailyPnL ? formatMoney(f.dailyPnL) : '--'}</td>
+                                    <td class="py-2 text-right ${(f.totalPnL || 0) >= 0 ? 'trend-up' : 'trend-down'}">${(f.totalPnL || 0) >= 0 ? '+' : ''}${f.totalPnL ? formatMoney(f.totalPnL) : '--'}</td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="4" class="py-4 text-center text-gray-500">暂无基金持仓</td></tr>'}
+                        </tbody>
+                    </table>
+                `;
+                
+                // 历史记录
+                const historyEntries = Object.entries(historicalData);
+                if (historyEntries.length > 0) {
+                    const historyHtml = historyEntries.map(([date, value]) => {
+                        const prevValue = getPreviousValue(date);
+                        const change = value - prevValue;
+                        const changePercent = prevValue ? (change / prevValue * 100).toFixed(2) : '0.00';
+                        return `
+                            <div class="flex justify-between py-2 border-b border-gray-100">
+                                <span class="text-gray-600">${date}</span>
+                                <span class="font-medium">${formatMoney(value)}</span>
+                                <span class="${change >= 0 ? 'trend-up' : 'trend-down'}">${change >= 0 ? '+' : ''}${changePercent}%</span>
+                            </div>
+                        `;
+                    }).reverse().join('');
+                    historyTab.innerHTML = historyHtml;
+                } else {
+                    historyTab.innerHTML = '<p class="text-gray-500 text-center py-4">暂无历史数据</p>';
+                }
+                
+                console.log('✅ 持仓表格渲染完成');
+            } catch (e) {
+                console.error('❌ renderStocksTab 出错:', e);
+            }
         }
         
         function getPreviousValue(currentDate) {
@@ -756,33 +795,54 @@
         // 数据更新（每日同步）
         // ============================================
         function submitDailyUpdate() {
-            const date = document.getElementById('updateDate').value;
-            const total = parseFloat(document.getElementById('updateTotal').value);
-            const daily = parseFloat(document.getElementById('updateDaily').value);
-            
-            if (!date || !total) {
-                alert('请填写完整数据');
-                return;
+            try {
+                const dateInput = document.getElementById('updateDate');
+                const totalInput = document.getElementById('updateTotal');
+                const dailyInput = document.getElementById('updateDaily');
+                
+                if (!dateInput || !totalInput) {
+                    alert('页面元素加载异常，请刷新重试');
+                    return;
+                }
+                
+                const date = dateInput.value;
+                const total = parseFloat(totalInput.value);
+                const daily = parseFloat(dailyInput.value) || 0;
+                
+                console.log('提交更新:', { date, total, daily });
+                
+                if (!date || isNaN(total) || total <= 0) {
+                    alert('请填写完整且有效的数据');
+                    return;
+                }
+                
+                // 更新数据
+                portfolioData.date = date;
+                portfolioData.totalAssets = total;
+                portfolioData.dailyPnL = daily;
+                portfolioData.totalPnL = (portfolioData.totalPnL || 0) + daily;
+                
+                // 添加到历史数据
+                historicalData[date] = total;
+                
+                console.log('更新后的数据:', portfolioData);
+                
+                // 重新渲染
+                renderData();
+                renderPerformanceChart();
+                renderStocksTab();
+                
+                // 保存到本地存储
+                localStorage.setItem('portfolio_data', JSON.stringify(portfolioData));
+                localStorage.setItem('portfolio_history', JSON.stringify(historicalData));
+                
+                console.log('✅ 数据已保存到本地存储');
+                
+                alert('✅ 数据更新成功！');
+            } catch (e) {
+                console.error('❌ submitDailyUpdate 出错:', e);
+                alert('更新失败: ' + e.message);
             }
-            
-            // 更新数据
-            portfolioData.date = date;
-            portfolioData.totalAssets = total;
-            portfolioData.dailyPnL = daily || 0;
-            portfolioData.totalPnL += (daily || 0);
-            
-            // 添加到历史数据
-            historicalData[date] = total;
-            
-            // 重新渲染
-            renderData();
-            renderPerformanceChart();
-            
-            // 保存到本地存储（临时方案，后续对接飞书）
-            localStorage.setItem('portfolio_data', JSON.stringify(portfolioData));
-            localStorage.setItem('portfolio_history', JSON.stringify(historicalData));
-            
-            alert('数据已更新！后续将同步到云端。');
         }
         
         function syncData() {
