@@ -291,13 +291,153 @@
         let portfolioData = { accounts: {}, history: [] };
         let currentAccountId = 'default';
         let chart = null;
+        
+        // API 配置
+        const API_BASE = 'http://localhost:5000';  // 本地API服务
+        let useRealData = false;  // 是否使用真实数据
+
+        // ========== API 调用函数 ==========
+        async function fetchFromAPI(endpoint) {
+            try {
+                const resp = await fetch(`${API_BASE}${endpoint}`, { timeout: 5000 });
+                if (!resp.ok) throw new Error('API Error');
+                const data = await resp.json();
+                return data.success ? data.data : null;
+            } catch (e) {
+                console.log('API fetch failed:', e);
+                return null;
+            }
+        }
+
+        async function loadRealTimeData() {
+            """尝试从API加载实时数据"""
+            const portfolio = await fetchFromAPI('/api/portfolio');
+            if (portfolio) {
+                useRealData = true;
+                updateDashboardWithRealData(portfolio);
+                return true;
+            }
+            return false;
+        }
+
+        function updateDashboardWithRealData(portfolio) {
+            """用真实数据更新仪表盘"""
+            const summary = portfolio.summary;
+            const holdings = portfolio.holdings;
+            
+            // 总资产
+            document.getElementById('totalAssets').textContent = '¥' + (summary.totalValue / 10000).toFixed(2) + '万';
+            
+            // 今日盈亏
+            const pnlEl = document.getElementById('dailyPnL');
+            pnlEl.textContent = (summary.dailyPnL >= 0 ? '+' : '') + '¥' + summary.dailyPnL.toLocaleString();
+            pnlEl.className = 'text-2xl font-bold ' + (summary.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            
+            // 盈亏百分比
+            const totalValue = summary.totalValue;
+            const dailyPercent = totalValue > 0 ? (summary.dailyPnL / (totalValue - summary.dailyPnL) * 100).toFixed(2) : 0;
+            document.getElementById('dailyPercent').textContent = (summary.dailyPnL >= 0 ? '+' : '') + dailyPercent + '%';
+            document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (summary.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            
+            // 累计收益
+            const totalPnlEl = document.getElementById('totalPnL');
+            totalPnlEl.textContent = (summary.totalPnL >= 0 ? '+' : '') + '¥' + (summary.totalPnL / 10000).toFixed(2) + '万';
+            totalPnlEl.className = 'text-2xl font-bold ' + (summary.totalPnL >= 0 ? 'trend-up' : 'trend-down');
+
+            // 账户数量
+            document.getElementById('accountCount').textContent = summary.holdingCount + '只持仓';
+
+            // 风险等级（基于真实数据计算）
+            calculateRiskLevelFromData(holdings);
+
+            // 持仓列表
+            renderHoldingsFromRealData(holdings);
+            
+            // 添加数据来源标识
+            const dataStatus = summary.dataValidated ? '✓ 已交叉验证' : '? 单数据源';
+            console.log(`[数据更新] ${summary.updateTime} - ${dataStatus}`);
+        }
+
+        function calculateRiskLevelFromData(holdings) {
+            """基于真实持仓计算风险等级"""
+            if (!holdings || holdings.length === 0) return;
+            
+            let totalValue = 0;
+            let maxPosition = 0;
+            
+            holdings.forEach(h => {
+                const value = h.marketValue || 0;
+                totalValue += value;
+                if (value > maxPosition) maxPosition = value;
+            });
+            
+            const concentration = totalValue > 0 ? maxPosition / totalValue : 0;
+            
+            let riskLevel, riskClass, riskDesc;
+            if (concentration > 0.6) {
+                riskLevel = '高风险';
+                riskClass = 'risk-high';
+                riskDesc = '持仓集中度过高';
+            } else if (concentration > 0.4) {
+                riskLevel = '中风险';
+                riskClass = 'risk-medium';
+                riskDesc = '平衡型投资组合';
+            } else {
+                riskLevel = '低风险';
+                riskClass = 'risk-low';
+                riskDesc = '分散型投资组合';
+            }
+
+            const riskEl = document.getElementById('riskLevel');
+            riskEl.innerHTML = `<span class="px-3 py-1 rounded-lg ${riskClass}">${riskLevel}</span>`;
+            document.getElementById('riskDetail').textContent = riskDesc;
+        }
+
+        function renderHoldingsFromRealData(holdings) {
+            """用真实数据渲染持仓列表"""
+            let html = '<table class="w-full text-sm"><thead><tr class="text-gray-500"><th class="text-left py-2">名称/代码</th><th class="text-right">持股</th><th class="text-right">现价</th><th class="text-right">市值</th><th class="text-right">盈亏</th></tr></thead><tbody>';
+            
+            holdings.forEach(stock => {
+                const pnl = stock.pnl || 0;
+                const pnlPercent = stock.pnlPercent || 0;
+                const trendClass = pnl >= 0 ? 'trend-up' : 'trend-down';
+                const pnlSign = pnl >= 0 ? '+' : '';
+                
+                html += `<tr class="border-b border-gray-100">
+                    <td class="py-3">
+                        <div class="font-medium">${stock.name}</div>
+                        <div class="text-xs text-gray-400">${stock.code}</div>
+                        ${stock.crossValidated ? '' : '<span class="text-xs text-yellow-500">待验证</span>'}
+                    </td>
+                    <td class="text-right">${stock.shares.toLocaleString()}</td>
+                    <td class="text-right">¥${stock.price.toFixed(2)}</td>
+                    <td class="text-right">¥${(stock.marketValue/10000).toFixed(2)}万</td>
+                    <td class="text-right ${trendClass}">${pnlSign}¥${(pnl/10000).toFixed(2)}万</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('content-stocks').innerHTML = html;
+        }
 
         // ========== 初始化 ==========
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             loadData();
             initDate();
-            renderDashboard();
+            
+            // 尝试加载真实数据
+            const hasRealData = await loadRealTimeData();
+            if (!hasRealData) {
+                console.log('[系统] 使用本地缓存数据，API服务未启动');
+                renderDashboard();
+            }
+            
             initChart();
+            
+            // 如果API可用，定时刷新数据（每30秒）
+            if (useRealData) {
+                setInterval(loadRealTimeData, 30000);
+            }
         });
 
         // ========== 日期初始化 - 永远显示今天 ==========
@@ -721,9 +861,15 @@
         }
 
         function syncData() {
-            renderDashboard();
-            initDate();
-            alert('数据已同步');
+            if (useRealData) {
+                loadRealTimeData().then(() => {
+                    alert('数据已同步（实时）');
+                });
+            } else {
+                renderDashboard();
+                initDate();
+                alert('数据已同步（本地）\n\n提示：启动本地API服务可获取实时数据\npython api_server.py');
+            }
         }
 
         // ========== 其他功能占位 ==========
