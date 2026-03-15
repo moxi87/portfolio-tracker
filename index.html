@@ -422,23 +422,51 @@
 
         // ========== 初始化 ==========
         document.addEventListener('DOMContentLoaded', async () => {
-            loadData();
+            await loadHoldingsFromJSON();
             initDate();
-            
-            // 尝试加载真实数据
-            const hasRealData = await loadRealTimeData();
-            if (!hasRealData) {
-                console.log('[系统] 使用本地缓存数据，API服务未启动');
-                renderDashboard();
-            }
-            
+            renderDashboard();
             initChart();
-            
-            // 如果API可用，定时刷新数据（每30秒）
-            if (useRealData) {
-                setInterval(loadRealTimeData, 30000);
-            }
         });
+
+        // ========== 从JSON文件加载持仓数据 ==========
+        async function loadHoldingsFromJSON() {
+            try {
+                const response = await fetch('data/holdings.json');
+                if (!response.ok) throw new Error('Failed to load holdings');
+                
+                const data = await response.json();
+                
+                // 转换数据格式
+                const account = data.accounts[0];
+                portfolioData = {
+                    accounts: {
+                        'default': {
+                            id: 'default',
+                            name: account.name,
+                            type: account.type,
+                            icon: 'fa-wallet',
+                            color: '#6366f1',
+                            data: {
+                                date: data.lastUpdate,
+                                totalAssets: data.summary.totalAssets,
+                                dailyPnL: data.summary.dailyPnL,
+                                totalPnL: data.summary.totalPnL,
+                                stocks: account.stocks || [],
+                                funds: account.funds || []
+                            }
+                        }
+                    },
+                    history: data.history || []
+                };
+                
+                console.log('[数据加载] 成功从 holdings.json 加载', data.summary.totalAssets);
+                return true;
+            } catch (e) {
+                console.error('[数据加载] 失败，使用默认数据:', e);
+                loadData(); // 回退到默认数据
+                return false;
+            }
+        }
 
         // ========== 日期初始化 - 永远显示今天 ==========
         function initDate() {
@@ -499,28 +527,42 @@
             if (!account) return;
 
             const data = account.data;
+            const stocks = data.stocks || [];
+            const funds = data.funds || [];
+            
+            // 计算汇总数据
+            const stockValue = stocks.reduce((sum, s) => sum + (s.marketValue || 0), 0);
+            const fundValue = funds.reduce((sum, f) => sum + (f.marketValue || 0), 0);
+            const totalValue = stockValue + fundValue;
+            
+            const stockDailyPnL = stocks.reduce((sum, s) => sum + (s.dailyPnL || 0), 0);
+            const fundDailyPnL = funds.reduce((sum, f) => sum + (f.dailyPnL || 0), 0);
+            const totalDailyPnL = stockDailyPnL + fundDailyPnL;
+            
+            const stockTotalPnL = stocks.reduce((sum, s) => sum + (s.totalPnL || 0), 0);
+            const fundTotalPnL = funds.reduce((sum, f) => sum + (f.totalPnL || 0), 0);
+            const totalPnL = stockTotalPnL + fundTotalPnL;
             
             // 总资产
-            document.getElementById('totalAssets').textContent = '¥' + (data.totalAssets / 10000).toFixed(2) + '万';
+            document.getElementById('totalAssets').textContent = '¥' + (totalValue / 10000).toFixed(2) + '万';
             
             // 今日盈亏
             const pnlEl = document.getElementById('dailyPnL');
-            pnlEl.textContent = (data.dailyPnL >= 0 ? '+' : '') + '¥' + data.dailyPnL.toLocaleString();
-            pnlEl.className = 'text-2xl font-bold ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            pnlEl.textContent = (totalDailyPnL >= 0 ? '+' : '') + '¥' + totalDailyPnL.toLocaleString();
+            pnlEl.className = 'text-2xl font-bold ' + (totalDailyPnL >= 0 ? 'trend-up' : 'trend-down');
             
             // 盈亏百分比
-            const pnlPercent = (data.dailyPnL / (data.totalAssets - data.dailyPnL) * 100).toFixed(2);
-            document.getElementById('dailyPercent').textContent = (data.dailyPnL >= 0 ? '+' : '') + pnlPercent + '%';
-            document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (data.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            const pnlPercent = totalValue > 0 ? (totalDailyPnL / (totalValue - totalDailyPnL) * 100).toFixed(2) : 0;
+            document.getElementById('dailyPercent').textContent = (totalDailyPnL >= 0 ? '+' : '') + pnlPercent + '%';
+            document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (totalDailyPnL >= 0 ? 'trend-up' : 'trend-down');
             
             // 累计收益
             const totalPnlEl = document.getElementById('totalPnL');
-            totalPnlEl.textContent = (data.totalPnL >= 0 ? '+' : '') + '¥' + (data.totalPnL / 10000).toFixed(2) + '万';
-            totalPnlEl.className = 'text-2xl font-bold ' + (data.totalPnL >= 0 ? 'trend-up' : 'trend-down');
+            totalPnlEl.textContent = (totalPnL >= 0 ? '+' : '') + '¥' + (totalPnL / 10000).toFixed(2) + '万';
+            totalPnlEl.className = 'text-2xl font-bold ' + (totalPnL >= 0 ? 'trend-up' : 'trend-down');
 
-            // 账户数量
-            const accountCount = Object.keys(portfolioData.accounts).length;
-            document.getElementById('accountCount').textContent = accountCount + '个账户';
+            // 持仓统计
+            document.getElementById('accountCount').textContent = `${stocks.length}只股票 · ${funds.length}只基金`;
 
             // 风险等级计算
             calculateRiskLevel();
@@ -535,74 +577,129 @@
             if (!account) return;
 
             const stocks = account.data.stocks || [];
+            const funds = account.data.funds || [];
+            
             let totalValue = 0;
-            let weightedVolatility = 0;
-
-            // 模拟计算风险（实际应该基于历史波动率）
-            const stockRisks = {
-                '002594': { beta: 1.2, vol: 0.35 }, // 比亚迪 - 高波动
-                '603019': { beta: 1.5, vol: 0.45 }, // 中科曙光 - 高波动科技
-                '603993': { beta: 1.0, vol: 0.30 }  // 洛阳钼业 - 中等波动
-            };
-
-            stocks.forEach(stock => {
-                const value = stock.shares * stock.price;
+            let maxPosition = 0;
+            
+            // 计算股票集中度
+            stocks.forEach(s => {
+                const value = s.marketValue || 0;
                 totalValue += value;
-                const risk = stockRisks[stock.code] || { vol: 0.3 };
-                weightedVolatility += value * risk.vol;
+                if (value > maxPosition) maxPosition = value;
             });
-
-            const portfolioVol = totalValue > 0 ? weightedVolatility / totalValue : 0;
+            
+            // 计算基金集中度
+            funds.forEach(f => {
+                const value = f.marketValue || 0;
+                totalValue += value;
+                if (value > maxPosition) maxPosition = value;
+            });
+            
+            const concentration = totalValue > 0 ? maxPosition / totalValue : 0;
+            
+            // 计算海外资产占比
+            const overseasFunds = funds.filter(f => f.market === '美股' || f.market === '港股' || f.market === '海外');
+            const overseasValue = overseasFunds.reduce((sum, f) => sum + (f.marketValue || 0), 0);
+            const overseasRatio = totalValue > 0 ? overseasValue / totalValue : 0;
             
             let riskLevel, riskClass, riskDesc;
-            if (portfolioVol < 0.25) {
-                riskLevel = '低风险';
-                riskClass = 'risk-low';
-                riskDesc = '保守型投资组合';
-            } else if (portfolioVol < 0.35) {
-                riskLevel = '中风险';
-                riskClass = 'risk-medium';
-                riskDesc = '平衡型投资组合';
-            } else {
+            if (concentration > 0.5) {
                 riskLevel = '高风险';
                 riskClass = 'risk-high';
-                riskDesc = '进取型投资组合';
+                riskDesc = `比亚迪占比过高(${((maxPosition/totalValue)*100).toFixed(1)}%)`;
+            } else if (concentration > 0.35 || overseasRatio > 0.4) {
+                riskLevel = '中风险';
+                riskClass = 'risk-medium';
+                riskDesc = overseasRatio > 0.4 ? `海外资产占比${(overseasRatio*100).toFixed(0)}%` : '持仓集中度偏高';
+            } else {
+                riskLevel = '低风险';
+                riskClass = 'risk-low';
+                riskDesc = '分散型投资组合';
             }
 
             const riskEl = document.getElementById('riskLevel');
-            riskEl.textContent = riskLevel;
-            riskEl.className = 'text-2xl font-bold px-3 py-1 rounded-lg inline-block ' + riskClass;
+            riskEl.innerHTML = `<span class="px-3 py-1 rounded-lg ${riskClass}">${riskLevel}</span>`;
             document.getElementById('riskDetail').textContent = riskDesc;
         }
 
-        // ========== 持仓渲染 ==========
+        // ========== 持仓渲染（股票） ==========
         function renderHoldings() {
             const account = portfolioData.accounts[currentAccountId];
             if (!account) return;
 
             const stocks = account.data.stocks || [];
-            let html = '<table class="w-full text-sm"><thead><tr class="text-gray-500"><th class="text-left py-2">名称/代码</th><th class="text-right">持股</th><th class="text-right">现价</th><th class="text-right">市值</th><th class="text-right">盈亏</th></tr></thead><tbody>';
+            const funds = account.data.funds || [];
             
-            stocks.forEach(stock => {
-                const marketValue = stock.shares * stock.price;
-                const costValue = stock.shares * stock.cost;
-                const pnl = marketValue - costValue;
-                const pnlPercent = ((stock.price - stock.cost) / stock.cost * 100);
-                
-                html += `<tr class="border-b border-gray-100">
-                    <td class="py-3">
-                        <div class="font-medium">${stock.name}</div>
-                        <div class="text-xs text-gray-400">${stock.code}</div>
-                    </td>
-                    <td class="text-right">${stock.shares.toLocaleString()}</td>
-                    <td class="text-right">¥${stock.price.toFixed(2)}</td>
-                    <td class="text-right">¥${(marketValue/10000).toFixed(2)}万</td>
-                    <td class="text-right ${pnl >= 0 ? 'trend-up' : 'trend-down'}">${pnl >= 0 ? '+' : ''}¥${(pnl/10000).toFixed(2)}万</td>
-                </tr>`;
-            });
+            // 渲染股票
+            let stocksHtml = '<table class="w-full text-sm"><thead><tr class="text-gray-500"><th class="text-left py-2">名称/代码</th><th class="text-right">持股</th><th class="text-right">现价</th><th class="text-right">市值</th><th class="text-right">盈亏</th></tr></thead><tbody>';
             
-            html += '</tbody></table>';
-            document.getElementById('content-stocks').innerHTML = html;
+            if (stocks.length === 0) {
+                stocksHtml += '<tr><td colspan="5" class="text-center py-8 text-gray-400">暂无股票持仓</td></tr>';
+            } else {
+                stocks.forEach(stock => {
+                    const marketValue = stock.marketValue || (stock.shares * stock.price);
+                    const pnl = stock.totalPnL || 0;
+                    const pnlPercent = stock.returnRate || 0;
+                    
+                    stocksHtml += `<tr class="border-b border-gray-100">
+                        <td class="py-3">
+                            <div class="font-medium">${stock.name}</div>
+                            <div class="text-xs text-gray-400">${stock.code}</div>
+                        </td>
+                        <td class="text-right">${stock.shares.toLocaleString()}</td>
+                        <td class="text-right">¥${stock.price.toFixed(2)}</td>
+                        <td class="text-right">¥${(marketValue/10000).toFixed(2)}万</td>
+                        <td class="text-right ${pnl >= 0 ? 'trend-up' : 'trend-down'}">${pnl >= 0 ? '+' : ''}¥${(pnl/10000).toFixed(2)}万 (${pnlPercent.toFixed(2)}%)</td>
+                    </tr>`;
+                });
+            }
+            
+            stocksHtml += '</tbody></table>';
+            document.getElementById('content-stocks').innerHTML = stocksHtml;
+            
+            // 渲染基金
+            let fundsHtml = '<table class="w-full text-sm"><thead><tr class="text-gray-500"><th class="text-left py-2">基金名称</th><th class="text-right">代码</th><th class="text-right">净值</th><th class="text-right">市值</th><th class="text-right">盈亏</th></tr></thead><tbody>';
+            
+            if (funds.length === 0) {
+                fundsHtml += '<tr><td colspan="5" class="text-center py-8 text-gray-400">暂无基金持仓</td></tr>';
+            } else {
+                funds.forEach(fund => {
+                    const pnl = fund.totalPnL || 0;
+                    const pnlPercent = fund.returnRate || 0;
+                    
+                    fundsHtml += `<tr class="border-b border-gray-100">
+                        <td class="py-3">
+                            <div class="font-medium">${fund.name}</div>
+                            <span class="text-xs px-2 py-0.5 rounded ${fund.market === 'A股' ? 'bg-red-100 text-red-700' : fund.market === '美股' ? 'bg-blue-100 text-blue-700' : fund.market === '港股' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">${fund.market}</span>
+                        </td>
+                        <td class="text-right"><span class="text-gray-400">${fund.code}</span></td>
+                        <td class="text-right">¥${fund.nav.toFixed(3)}</td>
+                        <td class="text-right">¥${(fund.marketValue/10000).toFixed(2)}万</td>
+                        <td class="text-right ${pnl >= 0 ? 'trend-up' : 'trend-down'}">${pnl >= 0 ? '+' : ''}¥${(pnl/10000).toFixed(2)}万 (${pnlPercent.toFixed(2)}%)</td>
+                    </tr>`;
+                });
+            }
+            
+            fundsHtml += '</tbody></table>';
+            document.getElementById('content-funds').innerHTML = fundsHtml;
+            
+            // 渲染历史（如果有）
+            const history = portfolioData.history || [];
+            if (history.length > 0) {
+                let historyHtml = '<table class="w-full text-sm"><thead><tr class="text-gray-500"><th class="text-left py-2">日期</th><th class="text-right">总资产</th><th class="text-right">当日盈亏</th></tr></thead><tbody>';
+                history.forEach(h => {
+                    historyHtml += `<tr class="border-b border-gray-100">
+                        <td class="py-3">${h.date}</td>
+                        <td class="text-right">¥${(h.totalAssets/10000).toFixed(2)}万</td>
+                        <td class="text-right ${h.dailyPnL >= 0 ? 'trend-up' : 'trend-down'}">${h.dailyPnL >= 0 ? '+' : ''}¥${h.dailyPnL.toLocaleString()}</td>
+                    </tr>`;
+                });
+                historyHtml += '</tbody></table>';
+                document.getElementById('content-history').innerHTML = historyHtml;
+            } else {
+                document.getElementById('content-history').innerHTML = '<div class="text-center py-8 text-gray-400">暂无历史记录</div>';
+            }
         }
 
         // ========== 图表初始化 ==========
