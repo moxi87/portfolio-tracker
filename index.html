@@ -184,36 +184,23 @@
             </div>
         </div>
 
-        <!-- 第五屏：快捷工具 -->
-        <div class="grid grid-cols-3 md:grid-cols-6 gap-2">
-            <button onclick="showTradeLog()" class="p-3 rounded-xl bg-white border border-gray-200 text-center hover:bg-gray-50">
-                <i class="fas fa-history text-blue-500 mb-1"></i>
-                <div class="text-xs text-gray-600">交易记录</div>
+        <!-- 第五屏：快捷工具 - 精简为3个核心入口 -->
+        <div class="grid grid-cols-3 gap-3">
+            <button onclick="showDailyAudio()" class="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 text-center hover:from-indigo-100 hover:to-indigo-200 transition-all relative">
+                <i class="fas fa-headphones text-indigo-600 text-lg mb-2"></i>
+                <div class="text-sm font-medium text-gray-800">每日音频</div>
+                <div class="text-xs text-gray-500 mt-1">晨报·播客</div>
+                <span id="audioBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hidden flex items-center justify-center">1</span>
             </button>
-            <button onclick="showSentiment()" class="p-3 rounded-xl bg-white border border-gray-200 text-center hover:bg-gray-50">
-                <i class="fas fa-heartbeat text-red-500 mb-1"></i>
-                <div class="text-xs text-gray-600">市场情绪</div>
+            <button onclick="showAnalysisTools()" class="p-4 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 text-center hover:from-teal-100 hover:to-teal-200 transition-all">
+                <i class="fas fa-chart-pie text-teal-600 text-lg mb-2"></i>
+                <div class="text-sm font-medium text-gray-800">深度分析</div>
+                <div class="text-xs text-gray-500 mt-1">市场·对标</div>
             </button>
-            <button onclick="showNews()" class="p-3 rounded-xl bg-white border border-gray-200 text-center hover:bg-gray-50">
-                <i class="fas fa-newspaper text-green-500 mb-1"></i>
-                <div class="text-xs text-gray-600">持仓新闻</div>
-            </button>
-            <button onclick="showBenchmark()" class="p-3 rounded-xl bg-white border border-gray-200 text-center hover:bg-gray-50">
-                <i class="fas fa-chart-bar text-purple-500 mb-1"></i>
-                <div class="text-xs text-gray-600">收益对标</div>
-            </button>
-            <button onclick="showHoldingTrend()" class="p-3 rounded-xl bg-white border border-gray-200 text-center hover:bg-gray-50">
-                <i class="fas fa-chart-line text-orange-500 mb-1"></i>
-                <div class="text-xs text-gray-600">持仓走势</div>
-            </button>
-            <button onclick="showSettings()" class="p-3 rounded-xl bg-white border border-gray-200 text-center hover:bg-gray-50">
-                <i class="fas fa-cog text-gray-500 mb-1"></i>
-                <div class="text-xs text-gray-600">设置</div>
-            </button>
-            <button onclick="showDailyAudio()" class="p-3 rounded-xl bg-white border border-gray-200 text-center hover:bg-gray-50 relative">
-                <i class="fas fa-headphones text-indigo-500 mb-1"></i>
-                <div class="text-xs text-gray-600">每日音频</div>
-                <span id="audioBadge" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full hidden">1</span>
+            <button onclick="showSettings()" class="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 text-center hover:from-gray-100 hover:to-gray-200 transition-all">
+                <i class="fas fa-cog text-gray-600 text-lg mb-2"></i>
+                <div class="text-sm font-medium text-gray-800">设置</div>
+                <div class="text-xs text-gray-500 mt-1">偏好·关于</div>
             </button>
         </div>
 
@@ -767,7 +754,21 @@
         }
 
         function closePanel(id) {
-            document.getElementById(id).classList.add('hidden');
+            const panel = document.getElementById(id);
+            if (panel) {
+                // 如果是新创建的动态面板（直接移除）
+                if (panel.classList.contains('fixed') && panel.classList.contains('bg-black/50')) {
+                    panel.remove();
+                    document.body.style.overflow = '';
+                } else {
+                    // 如果是静态面板（添加 hidden 类）
+                    panel.classList.add('hidden');
+                }
+            }
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
         }
 
         // ========== 多账户渲染 ==========
@@ -975,12 +976,102 @@
         }
 
         // ========== 其他功能占位 ==========
-        function showTradeLog() { alert('交易日志功能开发中'); }
-        function showSentiment() { alert('市场情绪功能开发中'); }
-        function showNews() { alert('持仓新闻功能开发中'); }
-        function showBenchmark() { alert('收益对标功能开发中'); }
-        function showHoldingTrend() { alert('持仓走势功能开发中'); }
-        function showSettings() { alert('设置功能开发中'); }
+        function showAnalysisTools() {
+            """显示分析工具面板"""
+            const html = `
+                <div id="analysisPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('analysisPanel')">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[500px] max-h-[80vh] overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center">
+                                <h3 class="font-bold text-lg"><i class="fas fa-chart-pie text-teal-500 mr-2"></i>深度分析</h3>
+                                <button onclick="closePanel('analysisPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[60vh] space-y-3">
+                                <div onclick="alert('市场情绪：开发中，将展示恐慌贪婪指数、资金流向等')" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center"><i class="fas fa-heartbeat"></i></div>
+                                        <div>
+                                            <div class="font-medium">市场情绪</div>
+                                            <div class="text-xs text-gray-500">恐慌贪婪指数、资金流向</div>
+                                        </div>
+                                        <span class="ml-auto text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">即将上线</span>
+                                    </div>
+                                </div>
+                                <div onclick="alert('收益对标：开发中，将支持对比沪深300、创业板指等')" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center"><i class="fas fa-chart-bar"></i></div>
+                                        <div>
+                                            <div class="font-medium">收益对标</div>
+                                            <div class="text-xs text-gray-500">对比沪深300、创业板指</div>
+                                        </div>
+                                        <span class="ml-auto text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">即将上线</span>
+                                    </div>
+                                </div>
+                                <div onclick="alert('持仓走势：开发中，将展示个股历史价格走势')" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><i class="fas fa-chart-line"></i></div>
+                                        <div>
+                                            <div class="font-medium">持仓走势</div>
+                                            <div class="text-xs text-gray-500">个股历史价格走势</div>
+                                        </div>
+                                        <span class="ml-auto text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">即将上线</span>
+                                    </div>
+                                </div>
+                                <div onclick="alert('交易记录：开发中，将记录买入卖出操作')" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-history"></i></div>
+                                        <div>
+                                            <div class="font-medium">交易记录</div>
+                                            <div class="text-xs text-gray-500">买入卖出操作记录</div>
+                                        </div>
+                                        <span class="ml-auto text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">即将上线</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function showSettings() {
+            """显示设置面板"""
+            const html = `
+                <div id="settingsPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('settingsPanel')">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[500px] max-h-[80vh] overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center">
+                                <h3 class="font-bold text-lg"><i class="fas fa-cog text-gray-500 mr-2"></i>设置</h3>
+                                <button onclick="closePanel('settingsPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[60vh] space-y-4">
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <div class="font-medium mb-2">关于 Portfolio Pro</div>
+                                    <div class="text-sm text-gray-600">版本：v5.8</div>
+                                    <div class="text-sm text-gray-600">数据更新：每日20:30自动同步</div>
+                                </div>
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <div class="font-medium mb-2">外观</div>
+                                    <button onclick="toggleTheme(); closePanel('settingsPanel');" class="w-full py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
+                                        <i class="fas fa-moon mr-2"></i>切换深色模式
+                                    </button>
+                                </div>
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <div class="font-medium mb-2">数据</div>
+                                    <button onclick="syncData(); closePanel('settingsPanel');" class="w-full py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 mb-2">
+                                        <i class="fas fa-sync mr-2"></i>手动同步数据
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
         
         // ========== 每日音频功能 ==========
         let currentAudio = null;
