@@ -1,6 +1,6 @@
 {
-  "version": "2026-03-15",
-  "lastUpdate": "2026-03-10T15:00:00+08:00",
+  "version": "2026-03-16",
+  "lastUpdate": "2026-03-16T17:52:52.582651",
   "accounts": [
     {
       "id": "default",
@@ -35,7 +35,7 @@
           "code": "000043",
           "name": "嘉实美国成长股票(QDII)",
           "shares": 1,
-          "nav": 3.710,
+          "nav": 3.71,
           "marketValue": 37099.96,
           "dailyPnL": 737.84,
           "totalPnL": 4099.96,
@@ -61,7 +61,7 @@
           "shares": 1,
           "nav": 1.126,
           "marketValue": 11257.07,
-          "dailyPnL": 207.80,
+          "dailyPnL": 207.8,
           "totalPnL": 665.18,
           "returnRate": 6.28,
           "market": "A股",
@@ -95,11 +95,11 @@
           "code": "015283",
           "name": "华安恒生科技ETF联接(QDII)C",
           "shares": 1,
-          "nav": 1.050,
-          "marketValue": 10503.40,
+          "nav": 1.05,
+          "marketValue": 10503.4,
           "dailyPnL": 209.38,
           "totalPnL": -1500.92,
-          "returnRate": -12.50,
+          "returnRate": -12.5,
           "market": "港股",
           "weight": 6.37
         },
@@ -107,11 +107,11 @@
           "code": "YEB",
           "name": "余额宝",
           "shares": 1,
-          "nav": 1.000,
+          "nav": 1.0,
           "marketValue": 961.78,
           "dailyPnL": 0.02,
           "totalPnL": 98.33,
-          "returnRate": 0.00,
+          "returnRate": 0.0,
           "market": "现金",
           "weight": 0.58
         }
@@ -121,64 +121,81 @@
           "code": "002594",
           "name": "比亚迪",
           "shares": 2100,
-          "cost": 104.80,
-          "price": 96.60,
-          "marketValue": 202860.00,
-          "totalPnL": -13860.00,
-          "returnRate": -6.79,
+          "cost": 104.8,
+          "price": 104.62,
+          "marketValue": 219702.0,
+          "totalPnL": -378.0,
+          "returnRate": -0.17,
           "market": "A股",
-          "weight": 88.35
+          "weight": 93.5,
+          "dailyPnL": 16842.0
         },
         {
           "code": "601669",
           "name": "电网设备",
           "shares": 100,
-          "cost": 101.80,
-          "price": 114.21,
-          "marketValue": 11421.00,
-          "totalPnL": 1241.00,
-          "returnRate": 12.44,
+          "cost": 101.8,
+          "price": 6.47,
+          "marketValue": 647.0,
+          "totalPnL": -9533.0,
+          "returnRate": -93.64,
           "market": "A股",
-          "weight": 4.98
+          "weight": 0.28,
+          "dailyPnL": -10774.0
         },
         {
           "code": "603019",
           "name": "中科曙光",
           "shares": 100,
           "cost": 165.43,
-          "price": 88.19,
-          "marketValue": 8819.00,
-          "totalPnL": -7724.00,
-          "returnRate": -46.69,
+          "price": 88.13,
+          "marketValue": 8813.0,
+          "totalPnL": -7730.0,
+          "returnRate": -46.73,
           "market": "A股",
-          "weight": 3.84
+          "weight": 3.75,
+          "dailyPnL": -6.0
         },
         {
           "code": "603993",
           "name": "洛阳钼业",
           "shares": 300,
           "cost": 21.74,
-          "price": 21.74,
-          "marketValue": 6522.00,
-          "totalPnL": 0.00,
-          "returnRate": 0.00,
+          "price": 19.36,
+          "marketValue": 5808.0,
+          "totalPnL": -714.0,
+          "returnRate": -10.95,
           "market": "A股",
-          "weight": 2.84
+          "weight": 2.47,
+          "dailyPnL": -714.0
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 394589.49,
+    "totalAssets": 399937.49,
     "fundValue": 164967.49,
-    "stockValue": 229622.00,
-    "dailyPnL": 1512.86,
+    "stockValue": 234970.0,
+    "dailyPnL": 8403.86,
     "totalPnL": 24104.66,
-    "returnRate": 0.38,
+    "returnRate": 6.41,
     "fundDailyPnL": 3055.86,
-    "stockDailyPnL": -1543.00
+    "stockDailyPnL": 5348.0
   },
   "history": [
-    {"date": "2026-03-10", "totalAssets": 394589.49, "dailyPnL": 1512.86, "fundValue": 164967.49, "stockValue": 229622.00}
+    {
+      "date": "2026-03-10",
+      "totalAssets": 394589.49,
+      "dailyPnL": 1512.86,
+      "fundValue": 164967.49,
+      "stockValue": 229622.0
+    },
+    {
+      "date": "2026-03-16",
+      "totalAssets": 399937.49,
+      "dailyPnL": 8403.86,
+      "fundValue": 164967.49,
+      "stockValue": 234970.0
+    }
   ]
 }
