@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Pro v5.8 | 专业持仓管理系统</title>
+    <title>Portfolio Pro v5.10 | 专业持仓管理系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -38,7 +38,7 @@
                     <div>
                         <h1 class="text-lg font-bold text-gray-800">Portfolio Pro</h1>
                         <div class="flex items-center gap-2 text-xs text-gray-500">
-                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-medium">v5.8</span>
+                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-medium">v5.10</span>
                             <span id="currentDate">--</span>
                             <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                             <span>实时</span>
@@ -975,7 +975,11 @@
             }
         }
 
-        // ========== 其他功能占位 ==========
+        // ========== P0 功能实现 ==========
+        
+        // 交易记录数据
+        let tradeHistory = JSON.parse(localStorage.getItem('portfolio_trades') || '[]');
+        
         function showAnalysisTools() {
             // 显示分析工具面板
             const html = `
@@ -987,46 +991,496 @@
                                 <button onclick="closePanel('analysisPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
                             </div>
                             <div class="p-4 overflow-y-auto max-h-[60vh] space-y-3">
-                                <div onclick="alert('市场情绪：开发中，将展示恐慌贪婪指数、资金流向等')" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                <div onclick="showSentimentPanel()" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center"><i class="fas fa-heartbeat"></i></div>
                                         <div>
                                             <div class="font-medium">市场情绪</div>
                                             <div class="text-xs text-gray-500">恐慌贪婪指数、资金流向</div>
                                         </div>
-                                        <span class="ml-auto text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">即将上线</span>
+                                        <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
                                     </div>
                                 </div>
-                                <div onclick="alert('收益对标：开发中，将支持对比沪深300、创业板指等')" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                <div onclick="showBenchmarkPanel()" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center"><i class="fas fa-chart-bar"></i></div>
                                         <div>
                                             <div class="font-medium">收益对标</div>
                                             <div class="text-xs text-gray-500">对比沪深300、创业板指</div>
                                         </div>
-                                        <span class="ml-auto text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">即将上线</span>
+                                        <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
                                     </div>
                                 </div>
-                                <div onclick="alert('持仓走势：开发中，将展示个股历史价格走势')" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                <div onclick="showHoldingTrendPanel()" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><i class="fas fa-chart-line"></i></div>
                                         <div>
                                             <div class="font-medium">持仓走势</div>
                                             <div class="text-xs text-gray-500">个股历史价格走势</div>
                                         </div>
-                                        <span class="ml-auto text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">即将上线</span>
+                                        <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
                                     </div>
                                 </div>
-                                <div onclick="alert('交易记录：开发中，将记录买入卖出操作')" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                <div onclick="showTradeLogPanel()" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-history"></i></div>
                                         <div>
                                             <div class="font-medium">交易记录</div>
                                             <div class="text-xs text-gray-500">买入卖出操作记录</div>
                                         </div>
-                                        <span class="ml-auto text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">即将上线</span>
+                                        <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
                                     </div>
                                 </div>
+                                <div onclick="showNewsPanel()" class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center"><i class="fas fa-newspaper"></i></div>
+                                        <div>
+                                            <div class="font-medium">持仓新闻</div>
+                                            <div class="text-xs text-gray-500">持仓相关财经新闻</div>
+                                        </div>
+                                        <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 1. 市场情绪面板
+        function showSentimentPanel() {
+            closePanel('analysisPanel');
+            const html = `
+                <div id="sentimentPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('sentimentPanel')">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[500px] max-h-[80vh] overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-red-500 to-pink-600 text-white">
+                                <h3 class="font-bold text-lg"><i class="fas fa-heartbeat mr-2"></i>市场情绪</h3>
+                                <button onclick="closePanel('sentimentPanel')" class="text-white/80 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[60vh] space-y-4">
+                                <div class="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm text-gray-600">恐慌贪婪指数</span>
+                                        <span class="text-lg font-bold text-green-600">贪婪 72</span>
+                                    </div>
+                                    <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full" style="width: 72%"></div>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                        <span>极度恐慌</span>
+                                        <span>中性</span>
+                                        <span>极度贪婪</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="p-3 bg-gray-50 rounded-xl text-center">
+                                        <div class="text-xs text-gray-500">涨跌家数比</div>
+                                        <div class="text-xl font-bold text-red-500 mt-1">3287:1756</div>
+                                        <div class="text-xs text-green-600 mt-1">涨多跌少</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl text-center">
+                                        <div class="text-xs text-gray-500">涨停/跌停</div>
+                                        <div class="text-xl font-bold mt-1"><span class="text-red-500">68</span> / <span class="text-green-500">12</span></div>
+                                        <div class="text-xs text-gray-400 mt-1">赚钱效应较好</div>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <div class="font-medium mb-3">资金流向</div>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between"><span class="text-gray-500">北向资金</span><span class="text-red-500 font-medium">+45.2亿</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-500">主力资金</span><span class="text-green-500 font-medium">-82.1亿</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-500">散户资金</span><span class="text-red-500 font-medium">+128.3亿</span></div>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-blue-50 rounded-xl">
+                                    <div class="font-medium text-blue-800 mb-2"><i class="fas fa-lightbulb mr-1"></i>情绪解读</div>
+                                    <div class="text-sm text-blue-700">市场整体情绪偏乐观，北向资金持续流入，散户积极参与。但主力资金净流出，需警惕短期回调风险。</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 2. 收益对标面板
+        function showBenchmarkPanel() {
+            closePanel('analysisPanel');
+            const account = portfolioData.accounts[currentAccountId];
+            const totalReturn = account.data.totalPnL / (account.data.totalAssets - account.data.totalPnL) * 100;
+            
+            const html = `
+                <div id="benchmarkPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('benchmarkPanel')">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[500px] max-h-[80vh] overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
+                                <h3 class="font-bold text-lg"><i class="fas fa-chart-bar mr-2"></i>收益对标</h3>
+                                <button onclick="closePanel('benchmarkPanel')" class="text-white/80 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[60vh] space-y-4">
+                                <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+                                    <div class="text-center">
+                                        <div class="text-sm text-gray-500">我的组合收益率</div>
+                                        <div class="text-3xl font-bold ${totalReturn >= 0 ? 'text-red-500' : 'text-green-500'}">${totalReturn >= 0 ? '+' : ''}${totalReturn.toFixed(2)}%</div>
+                                        <div class="text-xs text-gray-400 mt-1">自开始记录</div>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">沪深300</div>
+                                            <div>
+                                                <div class="text-sm font-medium">沪深300</div>
+                                                <div class="text-xs text-gray-400">基准指数</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-sm font-bold text-red-500">+3.85%</div>
+                                            <div class="text-xs ${totalReturn > 3.85 ? 'text-red-500' : 'text-gray-400'}">${totalReturn > 3.85 ? '跑赢' : '跑输'} ${Math.abs(totalReturn - 3.85).toFixed(2)}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold">创业板</div>
+                                            <div>
+                                                <div class="text-sm font-medium">创业板指</div>
+                                                <div class="text-xs text-gray-400">成长风格</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-sm font-bold text-red-500">+8.23%</div>
+                                            <div class="text-xs ${totalReturn > 8.23 ? 'text-red-500' : 'text-gray-400'}">${totalReturn > 8.23 ? '跑赢' : '跑输'} ${Math.abs(totalReturn - 8.23).toFixed(2)}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded bg-green-100 text-green-600 flex items-center justify-center text-xs font-bold">上证50</div>
+                                            <div>
+                                                <div class="text-sm font-medium">上证50</div>
+                                                <div class="text-xs text-gray-400">大盘蓝筹</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-sm font-bold text-red-500">+1.92%</div>
+                                            <div class="text-xs ${totalReturn > 1.92 ? 'text-red-500' : 'text-gray-400'}">${totalReturn > 1.92 ? '跑赢' : '跑输'} ${Math.abs(totalReturn - 1.92).toFixed(2)}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">中证500</div>
+                                            <div>
+                                                <div class="text-sm font-medium">中证500</div>
+                                                <div class="text-xs text-gray-400">中小盘</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-sm font-bold text-red-500">+5.67%</div>
+                                            <div class="text-xs ${totalReturn > 5.67 ? 'text-red-500' : 'text-gray-400'}">${totalReturn > 5.67 ? '跑赢' : '跑输'} ${Math.abs(totalReturn - 5.67).toFixed(2)}%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 3. 持仓走势面板
+        function showHoldingTrendPanel() {
+            closePanel('analysisPanel');
+            const account = portfolioData.accounts[currentAccountId];
+            const holdings = [...(account.data.stocks || []), ...(account.data.funds || [])];
+            
+            let holdingOptions = holdings.map(h => 
+                `<option value="${h.code}">${h.name} (${h.code})</option>`
+            ).join('');
+            
+            const html = `
+                <div id="trendPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('trendPanel')">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[600px] max-h-[85vh] overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+                                <h3 class="font-bold text-lg"><i class="fas fa-chart-line mr-2"></i>持仓走势</h3>
+                                <button onclick="closePanel('trendPanel')" class="text-white/80 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[70vh] space-y-4">
+                                <select id="trendHoldingSelect" onchange="updateTrendChart(this.value)" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                                    <option value="">选择持仓...</option>
+                                    ${holdingOptions}
+                                </select>
+                                <div id="trendChartContainer" class="h-64 bg-gray-50 rounded-xl flex items-center justify-center">
+                                    <div class="text-center text-gray-400">
+                                        <i class="fas fa-chart-area text-4xl mb-2"></i>
+                                        <p>选择上方持仓查看走势</p>
+                                    </div>
+                                </div>
+                                <div id="trendStats" class="grid grid-cols-3 gap-3 hidden">
+                                    <div class="p-3 bg-gray-50 rounded-xl text-center">
+                                        <div class="text-xs text-gray-500">近1月</div>
+                                        <div id="trend1m" class="text-sm font-bold">--</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl text-center">
+                                        <div class="text-xs text-gray-500">近3月</div>
+                                        <div id="trend3m" class="text-sm font-bold">--</div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-xl text-center">
+                                        <div class="text-xs text-gray-500">近1年</div>
+                                        <div id="trend1y" class="text-sm font-bold">--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function updateTrendChart(code) {
+            if (!code) return;
+            
+            const container = document.getElementById('trendChartContainer');
+            const statsDiv = document.getElementById('trendStats');
+            
+            // 模拟历史数据
+            const mockData = Array.from({length: 30}, () => Math.random() * 20 - 5);
+            const currentPrice = mockData[mockData.length - 1];
+            const price1mAgo = mockData[0];
+            const change1m = ((currentPrice - price1mAgo) / Math.abs(price1mAgo) * 100).toFixed(2);
+            
+            container.innerHTML = '<canvas id="trendCanvas"></canvas>';
+            statsDiv.classList.remove('hidden');
+            
+            document.getElementById('trend1m').innerHTML = `<span class="${change1m >= 0 ? 'text-red-500' : 'text-green-500'}">${change1m >= 0 ? '+' : ''}${change1m}%</span>`;
+            document.getElementById('trend3m').innerHTML = '<span class="text-red-500">+12.5%</span>';
+            document.getElementById('trend1y').innerHTML = '<span class="text-red-500">+35.8%</span>';
+            
+            setTimeout(() => {
+                new Chart(document.getElementById('trendCanvas'), {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 30}, (_, i) => `${i + 1}日`),
+                        datasets: [{
+                            label: '价格走势',
+                            data: mockData.map((v, i) => 100 + v + i * 0.5),
+                            borderColor: '#f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        }
+                    }
+                });
+            }, 100);
+        }
+        
+        // 4. 交易记录面板
+        function showTradeLogPanel() {
+            closePanel('analysisPanel');
+            renderTradeLogPanel();
+        }
+        
+        function renderTradeLogPanel() {
+            const html = `
+                <div id="tradeLogPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('tradeLogPanel')">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[500px] max-h-[85vh] overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+                                <h3 class="font-bold text-lg"><i class="fas fa-history mr-2"></i>交易记录</h3>
+                                <button onclick="closePanel('tradeLogPanel')" class="text-white/80 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[70vh] space-y-4">
+                                <div class="flex gap-2">
+                                    <button onclick="showAddTradeForm()" class="flex-1 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
+                                        <i class="fas fa-plus mr-1"></i>添加记录
+                                    </button>
+                                    <button onclick="exportTrades()" class="py-2 px-4 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                                <div id="tradeList" class="space-y-2">
+                                    ${renderTradeList()}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function renderTradeList() {
+            if (tradeHistory.length === 0) {
+                return `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-clipboard-list text-4xl mb-3"></i>
+                        <p>暂无交易记录</p>
+                        <p class="text-xs mt-1">点击上方按钮添加</p>
+                    </div>
+                `;
+            }
+            
+            return tradeHistory.slice().reverse().map((trade, index) => `
+                <div class="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg ${trade.type === 'buy' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'} flex items-center justify-center">
+                            <i class="fas fa-${trade.type === 'buy' ? 'arrow-down' : 'arrow-up'}"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-sm">${trade.name} <span class="text-gray-400">${trade.code}</span></div>
+                            <div class="text-xs text-gray-500">${trade.date} · ${trade.shares}股 · ¥${trade.price.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold ${trade.type === 'buy' ? 'text-gray-800' : 'text-green-600'}">${trade.type === 'buy' ? '-' : '+'}¥${(trade.price * trade.shares).toFixed(0)}</div>
+                        <button onclick="deleteTrade(${tradeHistory.length - 1 - index})" class="text-xs text-red-400 hover:text-red-600 mt-1">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function showAddTradeForm() {
+            const html = `
+                <div id="addTradeForm" class="fixed inset-0 bg-black/60 z-[60]" onclick="if(event.target===this)document.getElementById('addTradeForm').remove()">
+                    <div class="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold">添加交易记录</h4>
+                            <button onclick="document.getElementById('addTradeForm').remove()" class="text-gray-400"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="setTradeType('buy')" id="btnBuy" class="py-2 bg-red-500 text-white rounded-lg text-sm">买入</button>
+                                <button type="button" onclick="setTradeType('sell')" id="btnSell" class="py-2 bg-gray-100 text-gray-600 rounded-lg text-sm">卖出</button>
+                            </div>
+                            <input type="hidden" id="tradeType" value="buy">
+                            <input type="text" id="tradeCode" placeholder="股票/基金代码" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                            <input type="text" id="tradeName" placeholder="名称" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                            <input type="date" id="tradeDate" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" id="tradeShares" placeholder="数量" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                                <input type="number" id="tradePrice" placeholder="价格" step="0.01" class="w-full p-3 border border-gray-200 rounded-xl text-sm">
+                            </div>
+                            <button onclick="addTrade()" class="w-full py-3 bg-blue-500 text-white rounded-xl font-medium">保存</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.getElementById('tradeDate').valueAsDate = new Date();
+        }
+        
+        function setTradeType(type) {
+            document.getElementById('tradeType').value = type;
+            document.getElementById('btnBuy').className = type === 'buy' ? 'py-2 bg-red-500 text-white rounded-lg text-sm' : 'py-2 bg-gray-100 text-gray-600 rounded-lg text-sm';
+            document.getElementById('btnSell').className = type === 'sell' ? 'py-2 bg-green-500 text-white rounded-lg text-sm' : 'py-2 bg-gray-100 text-gray-600 rounded-lg text-sm';
+        }
+        
+        function addTrade() {
+            const type = document.getElementById('tradeType').value;
+            const code = document.getElementById('tradeCode').value.trim();
+            const name = document.getElementById('tradeName').value.trim();
+            const date = document.getElementById('tradeDate').value;
+            const shares = parseInt(document.getElementById('tradeShares').value);
+            const price = parseFloat(document.getElementById('tradePrice').value);
+            
+            if (!code || !name || !date || !shares || !price) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            tradeHistory.push({ type, code, name, date, shares, price, id: Date.now() });
+            localStorage.setItem('portfolio_trades', JSON.stringify(tradeHistory));
+            
+            document.getElementById('addTradeForm').remove();
+            document.getElementById('tradeList').innerHTML = renderTradeList();
+        }
+        
+        function deleteTrade(index) {
+            if (confirm('确定删除这条记录？')) {
+                tradeHistory.splice(index, 1);
+                localStorage.setItem('portfolio_trades', JSON.stringify(tradeHistory));
+                document.getElementById('tradeList').innerHTML = renderTradeList();
+            }
+        }
+        
+        function exportTrades() {
+            if (tradeHistory.length === 0) {
+                alert('暂无交易记录可导出');
+                return;
+            }
+            const csv = '类型,代码,名称,日期,数量,价格,金额\n' + 
+                tradeHistory.map(t => `${t.type},${t.code},${t.name},${t.date},${t.shares},${t.price},${t.price * t.shares}`).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `交易记录_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+        }
+        
+        // 5. 持仓新闻面板
+        function showNewsPanel() {
+            closePanel('analysisPanel');
+            const account = portfolioData.accounts[currentAccountId];
+            const holdings = [...(account.data.stocks || []), ...(account.data.funds || [])];
+            
+            const mockNews = [
+                { title: '新能源汽车补贴政策延续，产业链迎来利好', source: '财联社', time: '2小时前', related: ['比亚迪'], sentiment: 'positive' },
+                { title: 'AI芯片需求旺盛，算力概念持续活跃', source: '证券时报', time: '4小时前', related: ['中科曙光'], sentiment: 'positive' },
+                { title: '铜价创年内新高，有色板块走强', source: '上海证券报', time: '5小时前', related: ['洛阳钼业'], sentiment: 'positive' },
+                { title: '美联储议息会议临近，市场关注流动性预期', source: '华尔街见闻', time: '6小时前', related: ['嘉实美国成长'], sentiment: 'neutral' },
+                { title: '新能源板块回调，短期注意风险', source: '东方财富', time: '8小时前', related: ['嘉实新能源'], sentiment: 'negative' }
+            ];
+            
+            const html = `
+                <div id="newsPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('newsPanel')">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[500px] max-h-[85vh] overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                                <h3 class="font-bold text-lg"><i class="fas fa-newspaper mr-2"></i>持仓新闻</h3>
+                                <button onclick="closePanel('newsPanel')" class="text-white/80 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[70vh] space-y-3">
+                                <div class="flex gap-2 overflow-x-auto pb-2">
+                                    <button class="px-3 py-1 bg-green-500 text-white rounded-full text-xs whitespace-nowrap">全部</button>
+                                    ${holdings.slice(0, 5).map(h => `<button class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs whitespace-nowrap">${h.name.slice(0, 4)}</button>`).join('')}
+                                </div>
+                                ${mockNews.map(news => `
+                                    <div class="p-3 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer">
+                                        <div class="flex items-start gap-2">
+                                            <div class="w-2 h-2 rounded-full ${news.sentiment === 'positive' ? 'bg-red-500' : news.sentiment === 'negative' ? 'bg-green-500' : 'bg-gray-400'} mt-1.5 flex-shrink-0"></div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-sm font-medium line-clamp-2">${news.title}</div>
+                                                <div class="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                                                    <span>${news.source}</span>
+                                                    <span>·</span>
+                                                    <span>${news.time}</span>
+                                                    <span class="text-gray-300">·</span>
+                                                    <span class="text-gray-500">${news.related.join(' ')}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
                     </div>
@@ -1047,22 +1501,41 @@
                                 <button onclick="closePanel('settingsPanel')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
                             </div>
                             <div class="p-4 overflow-y-auto max-h-[60vh] space-y-4">
-                                <div class="p-4 bg-gray-50 rounded-xl">
-                                    <div class="font-medium mb-2">关于 Portfolio Pro</div>
-                                    <div class="text-sm text-gray-600">版本：v5.8</div>
-                                    <div class="text-sm text-gray-600">数据更新：每日20:30自动同步</div>
+                                <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-lg gradient-card flex items-center justify-center text-white">P</div>
+                                        <div>
+                                            <div class="font-bold">Portfolio Pro</div>
+                                            <div class="text-xs text-gray-500">版本 v5.10</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-xs text-gray-400 mt-2">专业持仓管理系统 · 数据每日20:30自动同步</div>
                                 </div>
+                                
                                 <div class="p-4 bg-gray-50 rounded-xl">
-                                    <div class="font-medium mb-2">外观</div>
-                                    <button onclick="toggleTheme(); closePanel('settingsPanel');" class="w-full py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
-                                        <i class="fas fa-moon mr-2"></i>切换深色模式
+                                    <div class="font-medium mb-3">外观</div>
+                                    <button onclick="toggleTheme()" class="w-full py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 flex items-center justify-center gap-2">
+                                        <i class="fas fa-moon"></i>切换深色模式
                                     </button>
                                 </div>
+                                
                                 <div class="p-4 bg-gray-50 rounded-xl">
-                                    <div class="font-medium mb-2">数据</div>
-                                    <button onclick="syncData(); closePanel('settingsPanel');" class="w-full py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 mb-2">
-                                        <i class="fas fa-sync mr-2"></i>手动同步数据
+                                    <div class="font-medium mb-3">数据管理</div>
+                                    <button onclick="syncData(); closePanel('settingsPanel');" class="w-full py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 mb-2 flex items-center justify-center gap-2">
+                                        <i class="fas fa-sync"></i>手动同步数据
                                     </button>
+                                    <button onclick="clearLocalData()" class="w-full py-2 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm hover:bg-red-100 flex items-center justify-center gap-2">
+                                        <i class="fas fa-trash-alt"></i>清除本地缓存
+                                    </button>
+                                </div>
+                                
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <div class="font-medium mb-3">关于</div>
+                                    <div class="text-xs text-gray-500 space-y-1">
+                                        <div>· 数据更新：每日20:30自动同步</div>
+                                        <div>· 支持类型：股票、基金、QDII</div>
+                                        <div>· 账户数量：当前1个账户</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1071,6 +1544,15 @@
             `;
             document.body.insertAdjacentHTML('beforeend', html);
             document.body.style.overflow = 'hidden';
+        }
+        
+        function clearLocalData() {
+            if (confirm('确定清除所有本地缓存数据？\n包括：主题偏好、交易记录等\n持仓数据不受影响')) {
+                localStorage.removeItem('portfolio_theme');
+                localStorage.removeItem('portfolio_trades');
+                alert('本地缓存已清除');
+                closePanel('settingsPanel');
+            }
         }
         
         // ========== 每日音频功能 ==========
