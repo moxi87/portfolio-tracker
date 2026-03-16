@@ -1,0 +1,140 @@
+# Portfolio Pro 自动同步策略配置
+# 定时任务将读取此配置执行自动更新
+
+version: "2026-03-16"
+description: "持仓数据自动同步策略 - 收盘后自动更新股票+基金"
+
+# 持仓标的配置
+holdings:
+  stocks:
+    - code: "002594"
+      name: "比亚迪"
+      shares: 2100
+      cost: 104.80
+      market: "A股"
+      
+    - code: "601669"
+      name: "电网设备"
+      shares: 100
+      cost: 101.80
+      market: "A股"
+      
+    - code: "603019"
+      name: "中科曙光"
+      shares: 100
+      cost: 165.43
+      market: "A股"
+      
+    - code: "603993"
+      name: "洛阳钼业"
+      shares: 300
+      cost: 21.74
+      market: "A股"
+  
+  funds:
+    # A股基金 - T+1更新
+    - code: "003984"
+      name: "嘉实新能源新材料股票A"
+      type: "A股基金"
+      update_delay: "T+1"
+      
+    - code: "008586"
+      name: "华夏人工智能ETF联接D"
+      type: "A股基金"
+      update_delay: "T+1"
+      
+    - code: "016440"
+      name: "华夏中证红利质量ETF联接A"
+      type: "A股基金"
+      update_delay: "T+1"
+      
+    - code: "007467"
+      name: "华泰柏瑞中证红利低波动ETF联接C"
+      type: "A股基金"
+      update_delay: "T+1"
+      
+    - code: "013231"
+      name: "博时智选量化多因子股票C"
+      type: "A股基金"
+      update_delay: "T+1"
+    
+    # QDII基金 - T+2更新
+    - code: "000043"
+      name: "嘉实美国成长股票(QDII)"
+      type: "QDII"
+      update_delay: "T+2"
+      market: "美股"
+      
+    - code: "007904"
+      name: "华宝海外新能源汽车(QDII)A"
+      type: "QDII"
+      update_delay: "T+2"
+      market: "海外"
+      
+    - code: "015283"
+      name: "华安恒生科技ETF联接(QDII)C"
+      type: "QDII"
+      update_delay: "T+2"
+      market: "港股"
+    
+    # 现金类
+    - code: "YEB"
+      name: "余额宝"
+      type: "现金"
+      update_delay: "实时"
+
+# 数据源优先级配置
+data_sources:
+  stocks:
+    primary: "tencent"     # 腾讯财经 - 实时、稳定
+    fallback: "sina"       # 新浪财经 - 备用
+    
+  funds:
+    primary: "eastmoney"   # 天天基金 - 净值权威
+    fallback: null
+
+# 定时任务配置
+schedule:
+  # 主要更新 - 收盘后同步股票
+  main_sync:
+    time: "15:30"
+    days: [1, 2, 3, 4, 5]  # 周一至周五
+    target: ["stocks"]
+    
+  # A股基金更新 - 晚上8点（净值公布后）
+  fund_sync_a:
+    time: "20:00"
+    days: [1, 2, 3, 4, 5]
+    target: ["funds"]
+    filter: "A股基金"
+    
+  # QDII基金更新 - 次日晚（T+2净值）
+  fund_sync_qdii:
+    time: "20:30"
+    days: [2, 3, 4, 5, 6]  # 周二至周六
+    target: ["funds"]
+    filter: "QDII"
+
+# 错误处理策略
+error_handling:
+  retry_count: 3
+  retry_interval_minutes: 5
+  alert_on_failure: true
+  fallback_to_cached: true
+
+# 功能开关
+features:
+  auto_push_github: true      # 自动推送到GitHub
+  feishu_notification: true   # 飞书推送
+  history_tracking: true      # 记录历史数据
+  cross_validation: true      # 多源交叉验证
+
+# 通知配置
+notifications:
+  feishu:
+    user_id: "ou_ddff26b0a4b0f0e059d6e4d149232f92"
+    
+  conditions:
+    daily_report: true        # 每日报告
+    abnormal_change: 5.0      # 涨跌超过5%提醒
+    sync_failure: true        # 同步失败提醒
