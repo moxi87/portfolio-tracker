@@ -302,7 +302,7 @@
         }
 
         async function loadRealTimeData() {
-            """尝试从API加载实时数据"""
+            // 尝试从API加载实时数据
             const portfolio = await fetchFromAPI('/api/portfolio');
             if (portfolio) {
                 useRealData = true;
@@ -313,7 +313,7 @@
         }
 
         function updateDashboardWithRealData(portfolio) {
-            """用真实数据更新仪表盘"""
+            // 用真实数据更新仪表盘
             const summary = portfolio.summary;
             const holdings = portfolio.holdings;
             
@@ -351,7 +351,7 @@
         }
 
         function calculateRiskLevelFromData(holdings) {
-            """基于真实持仓计算风险等级"""
+            // 基于真实持仓计算风险等级
             if (!holdings || holdings.length === 0) return;
             
             let totalValue = 0;
@@ -386,7 +386,7 @@
         }
 
         function renderHoldingsFromRealData(holdings) {
-            """用真实数据渲染持仓列表"""
+            // 用真实数据渲染持仓列表
             let html = '<table class="w-full text-sm"><thead><tr class="text-gray-500"><th class="text-left py-2">名称/代码</th><th class="text-right">持股</th><th class="text-right">现价</th><th class="text-right">市值</th><th class="text-right">盈亏</th></tr></thead><tbody>';
             
             holdings.forEach(stock => {
@@ -977,7 +977,7 @@
 
         // ========== 其他功能占位 ==========
         function showAnalysisTools() {
-            """显示分析工具面板"""
+            // 显示分析工具面板
             const html = `
                 <div id="analysisPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('analysisPanel')">
                     <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
@@ -1037,7 +1037,7 @@
         }
         
         function showSettings() {
-            """显示设置面板"""
+            // 显示设置面板
             const html = `
                 <div id="settingsPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('settingsPanel')">
                     <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
@@ -1078,7 +1078,7 @@
         let audioManifest = [];
         
         async function loadAudioManifest() {
-            """加载音频清单"""
+            // 加载音频清单
             try {
                 const resp = await fetch('./audio/audio-manifest.json?t=' + Date.now());
                 if (resp.ok) {
@@ -1092,7 +1092,7 @@
         }
         
         function updateAudioBadge() {
-            """更新音频未读标记"""
+            // 更新音频未读标记
             const badge = document.getElementById('audioBadge');
             const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
             const hasToday = audioManifest.some(a => a.date === today && !a.played);
@@ -1100,7 +1100,7 @@
         }
         
         function showDailyAudio() {
-            """显示每日音频面板"""
+            // 显示每日音频面板
             const html = `
                 <div id="audioPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closeAudioPanel()">
                     <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
@@ -1123,7 +1123,7 @@
         }
         
         function closeAudioPanel() {
-            """关闭音频面板"""
+            // 关闭音频面板
             const panel = document.getElementById('audioPanel');
             if (panel) {
                 panel.remove();
@@ -1136,7 +1136,7 @@
         }
         
         function renderAudioList() {
-            """渲染音频列表"""
+            // 渲染音频列表
             if (audioManifest.length === 0) {
                 return `
                     <div class="text-center py-8 text-gray-500">
@@ -1171,7 +1171,7 @@
         }
         
         function playAudio(file, btn) {
-            """播放音频"""
+            // 播放音频
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio = null;
