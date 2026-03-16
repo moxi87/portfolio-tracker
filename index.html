@@ -210,6 +210,11 @@
                 <i class="fas fa-cog text-gray-500 mb-1"></i>
                 <div class="text-xs text-gray-600">设置</div>
             </button>
+            <button onclick="showDailyAudio()" class="p-3 rounded-xl bg-white border border-gray-200 text-center hover:bg-gray-50 relative">
+                <i class="fas fa-headphones text-indigo-500 mb-1"></i>
+                <div class="text-xs text-gray-600">每日音频</div>
+                <span id="audioBadge" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full hidden">1</span>
+            </button>
         </div>
 
         <!-- 底部更新区 -->
@@ -976,6 +981,132 @@
         function showBenchmark() { alert('收益对标功能开发中'); }
         function showHoldingTrend() { alert('持仓走势功能开发中'); }
         function showSettings() { alert('设置功能开发中'); }
+        
+        // ========== 每日音频功能 ==========
+        let currentAudio = null;
+        let audioManifest = [];
+        
+        async function loadAudioManifest() {
+            """加载音频清单"""
+            try {
+                const resp = await fetch('./audio/audio-manifest.json?t=' + Date.now());
+                if (resp.ok) {
+                    audioManifest = await resp.json();
+                    updateAudioBadge();
+                }
+            } catch (e) {
+                console.log('音频清单加载失败:', e);
+                audioManifest = [];
+            }
+        }
+        
+        function updateAudioBadge() {
+            """更新音频未读标记"""
+            const badge = document.getElementById('audioBadge');
+            const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const hasToday = audioManifest.some(a => a.date === today && !a.played);
+            badge.classList.toggle('hidden', !hasToday);
+        }
+        
+        function showDailyAudio() {
+            """显示每日音频面板"""
+            const html = `
+                <div id="audioPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closeAudioPanel()">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[500px] max-h-[80vh] overflow-hidden" onclick="event.stopPropagation()">
+                            <div class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                                <h3 class="font-bold text-lg"><i class="fas fa-headphones mr-2"></i>每日音频</h3>
+                                <button onclick="closeAudioPanel()" class="text-white/80 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[60vh]">
+                                <div id="audioList" class="space-y-3">
+                                    ${renderAudioList()}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeAudioPanel() {
+            """关闭音频面板"""
+            const panel = document.getElementById('audioPanel');
+            if (panel) {
+                panel.remove();
+                document.body.style.overflow = '';
+            }
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+        }
+        
+        function renderAudioList() {
+            """渲染音频列表"""
+            if (audioManifest.length === 0) {
+                return `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-music text-4xl mb-3 text-gray-300"></i>
+                        <p>暂无音频内容</p>
+                        <p class="text-xs mt-2">每日04:45更新财经晨报，05:15更新乐活播客</p>
+                    </div>
+                `;
+            }
+            
+            return audioManifest.slice(0, 7).map(audio => `
+                <div class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 rounded-xl ${audio.type === 'finance' ? 'bg-blue-500' : 'bg-green-500'} text-white flex items-center justify-center flex-shrink-0">
+                            <i class="fas ${audio.type === 'finance' ? 'fa-chart-line' : 'fa-book-open'}"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-gray-800">${audio.title}</div>
+                            <div class="text-xs text-gray-500 mt-1">${audio.date} · ${audio.duration}</div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <button onclick="playAudio('${audio.file}', this)" class="flex-1 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600 flex items-center justify-center gap-2">
+                                    <i class="fas fa-play"></i> 播放
+                                </button>
+                                <a href="./audio/${audio.file}" download class="p-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function playAudio(file, btn) {
+            """播放音频"""
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+                document.querySelectorAll('#audioList button').forEach(b => {
+                    b.innerHTML = '<i class="fas fa-play"></i> 播放';
+                    b.classList.remove('bg-red-500');
+                    b.classList.add('bg-indigo-500');
+                });
+            }
+            
+            currentAudio = new Audio(`./audio/${file}`);
+            currentAudio.play();
+            btn.innerHTML = '<i class="fas fa-stop"></i> 停止';
+            btn.classList.remove('bg-indigo-500');
+            btn.classList.add('bg-red-500');
+            
+            currentAudio.onended = () => {
+                btn.innerHTML = '<i class="fas fa-play"></i> 播放';
+                btn.classList.remove('bg-red-500');
+                btn.classList.add('bg-indigo-500');
+                currentAudio = null;
+            };
+        }
+        
+        // 页面加载时加载音频清单
+        document.addEventListener('DOMContentLoaded', loadAudioManifest);
         function showAttributionPanel() { alert('收益归因功能开发中'); }
         function changePeriod(p) { 
             document.querySelectorAll('.period-btn').forEach(b => {
