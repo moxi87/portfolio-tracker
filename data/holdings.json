@@ -1,6 +1,6 @@
 {
-  "version": "2026-03-16",
-  "lastUpdate": "2026-03-16T20:03:07.226627",
+  "version": "2026-03-17",
+  "lastUpdate": "2026-03-17T15:33:06.462991",
   "accounts": [
     {
       "id": "default",
@@ -122,65 +122,65 @@
           "name": "比亚迪",
           "shares": 2100,
           "cost": 104.8,
-          "price": 104.62,
-          "marketValue": 219702.0,
-          "totalPnL": -378.0,
-          "returnRate": -0.17,
+          "price": 102.87,
+          "marketValue": 216027.0,
+          "totalPnL": -4053.0,
+          "returnRate": -1.84,
           "market": "A股",
-          "weight": 93.5,
-          "dailyPnL": 0.0
+          "weight": 93.52,
+          "dailyPnL": -3675.0
         },
         {
           "code": "601669",
           "name": "电网设备",
           "shares": 100,
           "cost": 101.8,
-          "price": 6.47,
-          "marketValue": 647.0,
-          "totalPnL": -9533.0,
-          "returnRate": -93.64,
+          "price": 6.12,
+          "marketValue": 612.0,
+          "totalPnL": -9568.0,
+          "returnRate": -93.99,
           "market": "A股",
-          "weight": 0.28,
-          "dailyPnL": 0.0
+          "weight": 0.26,
+          "dailyPnL": -35.0
         },
         {
           "code": "603019",
           "name": "中科曙光",
           "shares": 100,
           "cost": 165.43,
-          "price": 88.13,
-          "marketValue": 8813.0,
-          "totalPnL": -7730.0,
-          "returnRate": -46.73,
+          "price": 85.39,
+          "marketValue": 8539.0,
+          "totalPnL": -8004.0,
+          "returnRate": -48.38,
           "market": "A股",
-          "weight": 3.75,
-          "dailyPnL": 0.0
+          "weight": 3.7,
+          "dailyPnL": -274.0
         },
         {
           "code": "603993",
           "name": "洛阳钼业",
           "shares": 300,
           "cost": 21.74,
-          "price": 19.36,
-          "marketValue": 5808.0,
-          "totalPnL": -714.0,
-          "returnRate": -10.95,
+          "price": 19.42,
+          "marketValue": 5826.0,
+          "totalPnL": -696.0,
+          "returnRate": -10.67,
           "market": "A股",
-          "weight": 2.47,
-          "dailyPnL": 0.0
+          "weight": 2.52,
+          "dailyPnL": 18.0
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 399937.49,
+    "totalAssets": 395971.49,
     "fundValue": 164967.49,
-    "stockValue": 234970.0,
-    "dailyPnL": 3055.86,
+    "stockValue": 231004.0,
+    "dailyPnL": -910.14,
     "totalPnL": 24104.66,
-    "returnRate": 6.41,
+    "returnRate": 6.48,
     "fundDailyPnL": 3055.86,
-    "stockDailyPnL": 0.0
+    "stockDailyPnL": -3966.0
   },
   "history": [
     {
@@ -196,6 +196,13 @@
       "dailyPnL": 3055.86,
       "fundValue": 164967.49,
       "stockValue": 234970.0
+    },
+    {
+      "date": "2026-03-17",
+      "totalAssets": 395971.49,
+      "dailyPnL": -910.14,
+      "fundValue": 164967.49,
+      "stockValue": 231004.0
     }
   ]
 }
