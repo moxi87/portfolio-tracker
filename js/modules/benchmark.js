@@ -1,0 +1,239 @@
+// 收益对标模块 - P0
+const benchmark = {
+    // 指数代码映射
+    indices: {
+        'sh000001': { name: '上证指数', code: 'sh000001' },
+        'sh000300': { name: '沪深300', code: 'sh000300' },
+        'sz399001': { name: '深证成指', code: 'sz399001' },
+        'sz399006': { name: '创业板指', code: 'sz399006' },
+        'sh000905': { name: '中证500', code: 'sh000905' },
+        'sh000016': { name: '上证50', code: 'sh000016' }
+    },
+    
+    // 获取指数数据
+    async fetchIndexData(indexCode) {
+        try {
+            // 使用腾讯财经API
+            const response = await fetch(`https://qt.gtimg.cn/q=${indexCode}`);
+            const text = await response.text();
+            
+            // 解析数据
+            const match = text.match(/v_([a-z0-9]+)="([^"]+)"/);
+            if (match) {
+                const values = match[2].split('~');
+                return {
+                    code: indexCode,
+                    name: values[1],
+                    price: parseFloat(values[3]),
+                    change: parseFloat(values[5]),
+                    changePercent: parseFloat(values[32]),
+                    volume: parseFloat(values[37]),
+                    updateTime: values[30]
+                };
+            }
+        } catch (e) {
+            console.error(`获取 ${indexCode} 数据失败:`, e);
+        }
+        return null;
+    },
+    
+    // 获取所有指数数据
+    async fetchAllIndices() {
+        const results = {};
+        for (const [key, index] of Object.entries(this.indices)) {
+            results[key] = await this.fetchIndexData(index.code);
+        }
+        return results;
+    },
+    
+    // 计算相对收益
+    calculateRelativeReturn(portfolioReturn, indexReturn) {
+        return portfolioReturn - indexReturn;
+    },
+    
+    // 计算跑赢天数
+    calculateWinDays(portfolioHistory, indexHistory) {
+        if (!portfolioHistory || !indexHistory) return { win: 0, lose: 0, total: 0 };
+        
+        let win = 0, lose = 0;
+        const minLength = Math.min(portfolioHistory.length, indexHistory.length);
+        
+        for (let i = 1; i < minLength; i++) {
+            const portfolioChange = (portfolioHistory[i].totalAssets - portfolioHistory[i-1].totalAssets) / portfolioHistory[i-1].totalAssets;
+            const indexChange = (indexHistory[i].price - indexHistory[i-1].price) / indexHistory[i-1].price;
+            
+            if (portfolioChange > indexChange) win++;
+            else if (portfolioChange < indexChange) lose++;
+        }
+        
+        return { win, lose, total: win + lose };
+    },
+    
+    // 生成对标报告
+    async generateReport(portfolioData) {
+        const account = portfolioData.accounts?.default?.data;
+        const history = portfolioData.history || [];
+        
+        if (!account || history.length === 0) {
+            return { error: '数据不足' };
+        }
+        
+        // 计算组合收益
+        const first = history[0];
+        const latest = history[history.length - 1];
+        const portfolioReturn = ((latest.totalAssets - first.totalAssets) / first.totalAssets * 100).toFixed(2);
+        
+        // 获取指数数据
+        const indices = await this.fetchAllIndices();
+        
+        // 计算各指数期间收益（简化计算，使用当前涨跌幅作为参考）
+        const comparisons = [];
+        for (const [key, index] of Object.entries(indices)) {
+            if (index) {
+                // 模拟计算期间收益（实际需要历史数据）
+                const indexReturn = index.changePercent;
+                const relativeReturn = (parseFloat(portfolioReturn) - indexReturn).toFixed(2);
+                
+                comparisons.push({
+                    name: index.name,
+                    code: key,
+                    indexReturn: indexReturn.toFixed(2),
+                    portfolioReturn: portfolioReturn,
+                    relativeReturn: relativeReturn,
+                    status: relativeReturn >= 0 ? 'win' : 'lose'
+                });
+            }
+        }
+        
+        // 排序：跑赢的在前
+        comparisons.sort((a, b) => parseFloat(b.relativeReturn) - parseFloat(a.relativeReturn));
+        
+        return {
+            period: `${first.date} 至 ${latest.date}`,
+            days: history.length,
+            portfolioReturn: portfolioReturn,
+            comparisons: comparisons,
+            winCount: comparisons.filter(c => c.status === 'win').length,
+            totalCount: comparisons.length
+        };
+    },
+    
+    // 渲染对标卡片
+    renderCard(containerId, report) {
+        const container = document.getElementById(containerId);
+        if (!container || report.error) {
+            if (container) container.innerHTML = '<div class="text-center py-8 text-gray-400">暂无对标数据</div>';
+            return;
+        }
+        
+        let html = `
+            <div class="glass rounded-2xl p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">收益对标</span>
+                    </div>
+                    <span class="text-xs text-gray-400">${report.period}</span>
+                </div>
+                
+                <div class="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl">
+                    <div>
+                        <div class="text-xs text-gray-500 mb-1">我的组合</div>
+                        <div class="text-2xl font-bold ${parseFloat(report.portfolioReturn) >= 0 ? 'text-red-500' : 'text-green-500'}">
+                            ${parseFloat(report.portfolioReturn) >= 0 ? '+' : ''}${report.portfolioReturn}%
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-gray-500 mb-1">跑赢指数</div>
+                        <div class="text-2xl font-bold">
+                            <span class="text-red-500">${report.winCount}</span>
+                            <span class="text-gray-400">/${report.totalCount}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+        `;
+        
+        report.comparisons.forEach(c => {
+            const isWin = c.status === 'win';
+            html += `
+                <div class="flex items-center justify-between p-2 rounded-lg ${isWin ? 'bg-red-50' : 'bg-green-50'}">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-700">${c.name}</span>
+                        <span class="text-xs ${parseFloat(c.indexReturn) >= 0 ? 'text-red-500' : 'text-green-500'}">
+                            ${parseFloat(c.indexReturn) >= 0 ? '+' : ''}${c.indexReturn}%
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500">${isWin ? '跑赢' : '跑输'}</span>
+                        <span class="text-sm font-bold ${isWin ? 'text-red-500' : 'text-green-500'}">
+                            ${isWin ? '+' : ''}${c.relativeReturn}%
+                        㰄span>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    },
+    
+    // 渲染详细对标表格
+    renderTable(containerId, report) {
+        const container = document.getElementById(containerId);
+        if (!container || report.error) return;
+        
+        let html = `
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-gray-500 border-b border-gray-200">
+                            <th class="text-left py-2">指数</th>
+                            <th class="text-right">指数涨跌</th>
+                            <th class="text-right">我的组合</th>
+                            <th class="text-right">相对收益</th>
+                            <th class="text-center">状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        report.comparisons.forEach(c => {
+            const isWin = c.status === 'win';
+            html += `
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3 font-medium">${c.name}</td>
+                    <td class="text-right ${parseFloat(c.indexReturn) >= 0 ? 'text-red-500' : 'text-green-500'}">
+                        ${parseFloat(c.indexReturn) >= 0 ? '+' : ''}${c.indexReturn}%
+                    </td>
+                    <td class="text-right ${parseFloat(report.portfolioReturn) >= 0 ? 'text-red-500' : 'text-green-500'}">
+                        ${parseFloat(report.portfolioReturn) >= 0 ? '+' : ''}${report.portfolioReturn}%
+                    </td>
+                    <td class="text-right font-bold ${isWin ? 'text-red-500' : 'text-green-500'}">
+                        ${isWin ? '+' : ''}${c.relativeReturn}%
+                    </td>
+                    <td class="text-center">
+                        <span class="px-2 py-1 rounded-full text-xs ${isWin ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
+                            ${isWin ? '跑赢' : '跑输'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    }
+};

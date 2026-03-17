@@ -109,7 +109,16 @@
             </div>
         </div>
 
-        <!-- 第二屏：核心功能区 - 平铺展示，不隐藏 -->
+        <!-- 第二屏：市场情绪和收益对标 - 新增 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 市场情绪卡片 -->
+            <div id="sentiment-card"></div>
+            
+            <!-- 收益对标卡片 -->
+            <div id="benchmark-card"></div>
+        </div>
+
+        <!-- 第三屏：核心功能区 - 平铺展示，不隐藏 -->
         <div class="glass rounded-2xl p-4">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="font-bold text-gray-800"><i class="fas fa-star text-yellow-500 mr-2"></i>核心功能</h2>
@@ -175,11 +184,13 @@
             <div class="border-b border-gray-200 flex">
                 <button onclick="switchTab('stocks')" id="tab-stocks" class="flex-1 px-4 py-3 text-sm font-medium tab-active">股票</button>
                 <button onclick="switchTab('funds')" id="tab-funds" class="flex-1 px-4 py-3 text-sm font-medium text-gray-500">基金</button>
+                <button onclick="switchTab('news')" id="tab-news" class="flex-1 px-4 py-3 text-sm font-medium text-gray-500">新闻</button>
                 <button onclick="switchTab('history')" id="tab-history" class="flex-1 px-4 py-3 text-sm font-medium text-gray-500">历史</button>
             </div>
             <div class="p-4">
                 <div id="content-stocks" class="tab-content"></div>
                 <div id="content-funds" class="tab-content hidden"></div>
+                <div id="content-news" class="tab-content hidden"></div>
                 <div id="content-history" class="tab-content hidden"></div>
             </div>
         </div>
@@ -1688,6 +1699,52 @@
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
         }
+    </script>
+    <script src="js/modules/trade-records.js"></script>
+    <script src="js/modules/trend-analysis.js"></script>
+    <script src="js/modules/user-settings.js"></script>
+    <script src="js/modules/market-sentiment.js"></script>
+    <script src="js/modules/position-news.js"></script>
+    <script src="js/modules/benchmark.js"></script>
+    <script>
+        // 初始化新模块
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 初始化用户设置
+            if (typeof userSettings !== 'undefined') {
+                userSettings.init();
+            }
+            
+            // 加载市场情绪
+            if (typeof marketSentiment !== 'undefined') {
+                await marketSentiment.fetchData();
+                marketSentiment.renderCard('sentiment-card');
+            }
+            
+            // 加载收益对标
+            if (typeof benchmark !== 'undefined') {
+                const report = await benchmark.generateReport(portfolioData);
+                benchmark.renderCard('benchmark-card', report);
+            }
+            
+            // 加载持仓新闻
+            if (typeof positionNews !== 'undefined') {
+                const news = await positionNews.fetchAllPositionNews(portfolioData);
+                positionNews.renderNewsList('content-news', news);
+            }
+            
+            // 更新标签切换函数
+            const originalSwitchTab = switchTab;
+            switchTab = function(tab) {
+                originalSwitchTab(tab);
+                
+                // 如果切换到新闻标签，重新加载新闻
+                if (tab === 'news' && typeof positionNews !== 'undefined') {
+                    positionNews.fetchAllPositionNews(portfolioData).then(news => {
+                        positionNews.renderNewsList('content-news', news);
+                    });
+                }
+            };
+        });
     </script>
 </body>
 </html>
