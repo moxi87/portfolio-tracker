@@ -1,6 +1,6 @@
 {
   "version": "2026-03-17",
-  "lastUpdate": "2026-03-17T20:04:11.035531",
+  "lastUpdate": "2026-03-17T20:29:47.178727",
   "accounts": [
     {
       "id": "default",
@@ -11,97 +11,105 @@
           "code": "003984",
           "name": "嘉实新能源新材料股票A",
           "shares": 1,
-          "nav": 4.609,
-          "marketValue": 46090.54,
-          "dailyPnL": 859.37,
+          "nav": 2.9217,
+          "marketValue": 29217.34,
+          "dailyPnL": -16873.2,
           "totalPnL": 20385.88,
           "returnRate": 79.31,
           "market": "A股",
-          "weight": 27.94
+          "weight": 7.36,
+          "dailyChange": -2.58
         },
         {
           "code": "008586",
           "name": "华夏人工智能ETF联接D",
           "shares": 1,
-          "nav": 2.247,
-          "marketValue": 22473.41,
-          "dailyPnL": 432.15,
+          "nav": 1.3581,
+          "marketValue": 13583.06,
+          "dailyPnL": -8890.35,
           "totalPnL": 8473.41,
           "returnRate": 60.52,
           "market": "A股",
-          "weight": 13.62
+          "weight": 3.42,
+          "dailyChange": -2.52
         },
         {
           "code": "000043",
           "name": "嘉实美国成长股票(QDII)",
           "shares": 1,
-          "nav": 3.71,
-          "marketValue": 37099.96,
-          "dailyPnL": 737.84,
+          "nav": 5.457,
+          "marketValue": 54569.94,
+          "dailyPnL": 17469.98,
           "totalPnL": 4099.96,
           "returnRate": 12.42,
           "market": "美股",
-          "weight": 22.49
+          "weight": 13.76,
+          "dailyChange": 1.37
         },
         {
           "code": "007904",
           "name": "华宝海外新能源汽车(QDII)A",
           "shares": 1,
-          "nav": 1.708,
-          "marketValue": 17076.65,
-          "dailyPnL": 401.69,
+          "nav": 1.6109,
+          "marketValue": 16105.84,
+          "dailyPnL": -970.81,
           "totalPnL": 1076.65,
           "returnRate": 6.73,
           "market": "海外",
-          "weight": 10.35
+          "weight": 4.06,
+          "dailyChange": -1.18
         },
         {
           "code": "016440",
           "name": "华夏中证红利质量ETF联接A",
           "shares": 1,
-          "nav": 1.126,
-          "marketValue": 11257.07,
-          "dailyPnL": 207.8,
+          "nav": 1.2338,
+          "marketValue": 12334.79,
+          "dailyPnL": 1077.72,
           "totalPnL": 665.18,
           "returnRate": 6.28,
           "market": "A股",
-          "weight": 6.83
+          "weight": 3.11,
+          "dailyChange": -0.28
         },
         {
           "code": "007467",
           "name": "华泰柏瑞中证红利低波动ETF联接C",
           "shares": 1,
-          "nav": 1.017,
-          "marketValue": 10166.89,
-          "dailyPnL": -28.86,
+          "nav": 1.6515,
+          "marketValue": 16509.95,
+          "dailyPnL": 6343.06,
           "totalPnL": -260.88,
           "returnRate": -2.47,
           "market": "A股",
-          "weight": 6.16
+          "weight": 4.16,
+          "dailyChange": 0.24
         },
         {
           "code": "013231",
           "name": "博时智选量化多因子股票C",
           "shares": 1,
-          "nav": 0.934,
-          "marketValue": 9338.01,
-          "dailyPnL": 236.47,
+          "nav": 1.0991,
+          "marketValue": 10988.66,
+          "dailyPnL": 1650.65,
           "totalPnL": -374.33,
           "returnRate": -3.27,
           "market": "A股",
-          "weight": 5.66
+          "weight": 2.77,
+          "dailyChange": -0.6
         },
         {
           "code": "015283",
           "name": "华安恒生科技ETF联接(QDII)C",
           "shares": 1,
-          "nav": 1.05,
-          "marketValue": 10503.4,
-          "dailyPnL": 209.38,
+          "nav": 1.2391,
+          "marketValue": 12395.01,
+          "dailyPnL": 1891.61,
           "totalPnL": -1500.92,
           "returnRate": -12.5,
           "market": "港股",
-          "weight": 6.37
+          "weight": 3.12,
+          "dailyChange": -0.2
         },
         {
           "code": "YEB",
@@ -113,7 +121,7 @@
           "totalPnL": 98.33,
           "returnRate": 0.0,
           "market": "现金",
-          "weight": 0.58
+          "weight": 0.24
         }
       ],
       "stocks": [
@@ -127,12 +135,13 @@
           "totalPnL": -4053.0,
           "returnRate": -1.84,
           "market": "A股",
-          "weight": 93.52,
-          "dailyPnL": 0.0
+          "weight": 54.45,
+          "dailyPnL": 0.0,
+          "dailyChange": -1.67
         },
         {
           "code": "601669",
-          "name": "电网设备",
+          "name": "中国电建",
           "shares": 100,
           "cost": 101.8,
           "price": 6.12,
@@ -140,8 +149,9 @@
           "totalPnL": -9568.0,
           "returnRate": -93.99,
           "market": "A股",
-          "weight": 0.26,
-          "dailyPnL": 0.0
+          "weight": 0.15,
+          "dailyPnL": 0.0,
+          "dailyChange": -5.41
         },
         {
           "code": "603019",
@@ -153,8 +163,9 @@
           "totalPnL": -8004.0,
           "returnRate": -48.38,
           "market": "A股",
-          "weight": 3.7,
-          "dailyPnL": 0.0
+          "weight": 2.15,
+          "dailyPnL": 0.0,
+          "dailyChange": -3.11
         },
         {
           "code": "603993",
@@ -166,20 +177,21 @@
           "totalPnL": -696.0,
           "returnRate": -10.67,
           "market": "A股",
-          "weight": 2.52,
-          "dailyPnL": 0.0
+          "weight": 1.47,
+          "dailyPnL": 0.0,
+          "dailyChange": 0.31
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 395971.49,
-    "fundValue": 164967.49,
+    "totalAssets": 396708.59,
+    "fundValue": 165704.59,
     "stockValue": 231004.0,
-    "dailyPnL": 3055.86,
-    "totalPnL": 24104.66,
-    "returnRate": 6.48,
-    "fundDailyPnL": 3055.86,
+    "dailyPnL": 1698.66,
+    "totalPnL": 10342.28,
+    "returnRate": 2.68,
+    "fundDailyPnL": 1698.66,
     "stockDailyPnL": 0.0
   },
   "history": [
@@ -199,9 +211,9 @@
     },
     {
       "date": "2026-03-17",
-      "totalAssets": 395971.49,
-      "dailyPnL": 3055.86,
-      "fundValue": 164967.49,
+      "totalAssets": 396708.59,
+      "dailyPnL": 1698.66,
+      "fundValue": 165704.59,
       "stockValue": 231004.0
     }
   ]
