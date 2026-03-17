@@ -1,30 +1,153 @@
 {
-  "lastUpdate": "2026-03-11",
-  "lastSync": "22:55",
+  "lastUpdate": "2026-03-16",
+  "lastSync": "20:31",
   "funds": [
-    { "name": "嘉实新能源新材料股票A", "code": "003984", "marketValue": 47270.39, "dailyPnL": 1179.85, "holdingPnL": 21565.73, "returnRate": 83.85, "category": "新能源", "market": "A股", "price": 2.9648 },
-    { "name": "华夏人工智能ETF联接D", "code": "008586", "marketValue": 22217.83, "dailyPnL": -255.58, "holdingPnL": 8217.83, "returnRate": 58.67, "category": "科技", "market": "A股", "price": 1.4083 },
-    { "name": "嘉实美国成长股票(QDII)", "code": "000043", "marketValue": 36769.78, "dailyPnL": -330.18, "holdingPnL": 3769.78, "returnRate": 11.42, "category": "美股", "market": "美股", "price": 5.4679 },
-    { "name": "华宝海外新能源汽车(QDII)A", "code": "007904", "marketValue": 17076.65, "dailyPnL": 0, "holdingPnL": 1076.65, "returnRate": 6.73, "category": "新能源", "market": "海外" },
-    { "name": "华夏中证红利质量ETF联接A", "code": "016440", "marketValue": 11257.07, "dailyPnL": 207.80, "holdingPnL": 665.18, "returnRate": 6.28, "category": "红利", "market": "A股", "price": 1.2477 },
-    { "name": "华泰柏瑞中证红利低波动ETF联接C", "code": "007467", "marketValue": 10166.89, "dailyPnL": -28.86, "holdingPnL": -260.88, "returnRate": -2.47, "category": "红利", "market": "A股", "price": 1.6382 },
-    { "name": "博时智选量化多因子股票C", "code": "013231", "marketValue": 9338.01, "dailyPnL": 236.47, "holdingPnL": -374.33, "returnRate": -3.27, "category": "量化", "market": "A股", "price": 1.1144 },
-    { "name": "华安恒生科技ETF联接(QDII)C", "code": "015283", "marketValue": 10503.40, "dailyPnL": 0, "holdingPnL": -1500.92, "returnRate": -12.50, "category": "科技", "market": "港股" },
-    { "name": "电网设备ETF", "code": "159326", "marketValue": 11372.40, "shares": 5400, "price": 2.106, "dailyPnL": -48.60, "holdingPnL": 0, "returnRate": 0, "category": "ETF", "market": "A股" },
-    { "name": "余额宝", "code": "YEB", "marketValue": 961.78, "dailyPnL": 0.02, "holdingPnL": 98.33, "returnRate": 0, "category": "现金", "market": "现金" }
+    {
+      "name": "嘉实新能源新材料股票A",
+      "code": "003984",
+      "marketValue": 46317.3,
+      "dailyPnL": 226.76,
+      "holdingPnL": 20612.64,
+      "returnRate": 80.19,
+      "category": "新能源",
+      "market": "A股",
+      "price": 3.023
+    },
+    {
+      "name": "华夏人工智能ETF联接D",
+      "code": "008586",
+      "marketValue": 22279.91,
+      "dailyPnL": -193.5,
+      "holdingPnL": 8279.91,
+      "returnRate": 59.14,
+      "category": "科技",
+      "market": "A股",
+      "price": 1.3817
+    },
+    {
+      "name": "嘉实美国成长股票(QDII)",
+      "code": "000043",
+      "marketValue": 37433.11,
+      "dailyPnL": 333.15,
+      "holdingPnL": 4433.11,
+      "returnRate": 13.43,
+      "category": "美股",
+      "market": "美股",
+      "price": 5.517
+    },
+    {
+      "name": "华宝海外新能源汽车(QDII)A",
+      "code": "007904",
+      "marketValue": 16999.17,
+      "dailyPnL": -77.48,
+      "holdingPnL": 999.17,
+      "returnRate": 6.24,
+      "category": "新能源",
+      "market": "海外",
+      "price": 1.6456
+    },
+    {
+      "name": "华夏中证红利质量ETF联接A",
+      "code": "016440",
+      "marketValue": 11223.42,
+      "dailyPnL": -33.65,
+      "holdingPnL": 631.53,
+      "returnRate": 5.96,
+      "category": "红利",
+      "market": "A股",
+      "price": 1.2339
+    },
+    {
+      "name": "华泰柏瑞中证红利低波动ETF联接C",
+      "code": "007467",
+      "marketValue": 10168.74,
+      "dailyPnL": 1.85,
+      "holdingPnL": -259.03,
+      "returnRate": -2.48,
+      "category": "红利",
+      "market": "A股",
+      "price": 1.6468
+    },
+    {
+      "name": "博时智选量化多因子股票C",
+      "code": "013231",
+      "marketValue": 9363.39,
+      "dailyPnL": 25.38,
+      "holdingPnL": -348.95,
+      "returnRate": -3.59,
+      "category": "量化",
+      "market": "A股",
+      "price": 1.1067
+    },
+    {
+      "name": "华安恒生科技ETF联接(QDII)C",
+      "code": "015283",
+      "marketValue": 10241.73,
+      "dailyPnL": -261.67,
+      "holdingPnL": -1762.59,
+      "returnRate": -14.68,
+      "category": "科技",
+      "market": "港股",
+      "price": 1.2094
+    }
   ],
   "stocks": [
-    { "name": "比亚迪", "code": "002594", "marketValue": 208362.00, "shares": 2100, "price": 99.22, "cost": 103.635, "holdingPnL": -11712.57, "returnRate": -5.31, "category": "汽车", "market": "A股" },
-    { "name": "中科曙光", "code": "603019", "marketValue": 8805.00, "shares": 100, "price": 88.05, "cost": 165.432, "holdingPnL": -7738.15, "returnRate": -46.69, "category": "科技", "market": "A股" },
-    { "name": "洛阳钼业", "code": "603993", "marketValue": 6444.00, "shares": 300, "price": 21.48, "cost": -20.514, "holdingPnL": 12598.30, "returnRate": 0, "category": "有色", "market": "A股" }
+    {
+      "name": "比亚迪",
+      "code": "002594",
+      "marketValue": 219702.0,
+      "shares": 2100,
+      "price": 104.62,
+      "cost": 104.8,
+      "holdingPnL": -378.0,
+      "returnRate": -0.17,
+      "category": "汽车",
+      "market": "A股"
+    },
+    {
+      "name": "中国电建",
+      "code": "601669",
+      "marketValue": 647.0,
+      "shares": 100,
+      "price": 6.47,
+      "cost": 101.8,
+      "holdingPnL": -9533.0,
+      "returnRate": -93.64,
+      "category": "电网",
+      "market": "A股"
+    },
+    {
+      "name": "中科曙光",
+      "code": "603019",
+      "marketValue": 8813.0,
+      "shares": 100,
+      "price": 88.13,
+      "cost": 165.43,
+      "holdingPnL": -7730.0,
+      "returnRate": -46.73,
+      "category": "科技",
+      "market": "A股"
+    },
+    {
+      "name": "洛阳钼业",
+      "code": "603993",
+      "marketValue": 5808.0,
+      "shares": 300,
+      "price": 19.36,
+      "cost": 21.74,
+      "holdingPnL": -714.0,
+      "returnRate": -10.95,
+      "category": "有色",
+      "market": "A股"
+    }
   ],
   "summary": {
-    "totalAssets": 394846.60,
-    "fundValue": 177161.60,
-    "stockValue": 223611.00,
-    "dailyPnL": 960.90,
-    "totalPnL": 16609.56,
-    "dailyReturn": 0.24,
-    "totalReturn": 4.39
+    "totalAssets": 398996.77,
+    "fundValue": 164026.77,
+    "stockValue": 234970.0,
+    "dailyPnL": 10126.84,
+    "totalPnL": 14230.79,
+    "dailyReturn": 2.6,
+    "totalReturn": 3.7
   }
 }

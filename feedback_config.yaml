@@ -1,0 +1,40 @@
+# 用户反馈收集配置
+# 用于优化内容质量和推送策略
+
+feedback_config:
+  enabled: true
+  # 每条推送后附加反馈收集
+  collect_feedback: true
+  # 反馈方式: emoji (👍/👎) | text (简短回复) | both
+  feedback_type: "emoji"
+  # 反馈有效期: 推送后多长时间内收集 (小时)
+  feedback_window_hours: 24
+  
+content_weights:
+  # 基于反馈自动调整的内容权重
+  finance_report:
+    base_weight: 1.0
+    feedback_multiplier: true  # 根据反馈调整
+  
+  agile_podcast:
+    base_weight: 1.0
+    feedback_multiplier: true
+  
+  market_reminder:
+    base_weight: 0.8  # 市场提醒权重略低
+    feedback_multiplier: false  # 市场提醒不收集反馈（时效性强）
+
+auto_evolution:
+  enabled: true
+  # 自动执行阈值: 置信度>0.8的改进自动执行
+  auto_execute_threshold: 0.8
+  # 需要决策的阈值: 置信度<0.5推送用户决策
+  decision_threshold: 0.5
+  # 定期检查周期 (小时)
+  check_interval_hours: 6
+
+# 当前待决策事项队列
+decision_queue: []
+
+# 已自动执行的改进记录
+auto_executed_improvements: []
