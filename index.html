@@ -46,6 +46,12 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    <!-- 今日晨报按钮 - 新增 -->
+                    <button onclick="playTodayAudio()" class="px-3 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium hover:opacity-90 flex items-center gap-2 shadow-lg shadow-purple-200">
+                        <i class="fas fa-play"></i>
+                        <span class="hidden sm:inline">今日晨报</span>
+                    </button>
+                    
                     <button id="refreshBtn" onclick="realtimeData.refresh()" class="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100" title="刷新数据">
                         <i class="fas fa-sync"></i>
                     </button>
@@ -1697,6 +1703,42 @@
             event.target.classList.remove('bg-gray-200', 'text-gray-600');
             event.target.classList.add('bg-indigo-500', 'text-white');
         }
+        // 播放今日晨报音频
+        function playTodayAudio() {
+            const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const audioUrl = `http://101.126.40.132:8080/finance_${date}.mp3`;
+            
+            // 创建或获取音频播放器
+            let player = document.getElementById('globalAudioPlayer');
+            if (!player) {
+                player = document.createElement('audio');
+                player.id = 'globalAudioPlayer';
+                player.style.display = 'none';
+                document.body.appendChild(player);
+            }
+            
+            // 如果正在播放，暂停
+            if (!player.paused) {
+                player.pause();
+                realtimeData.showToast('已暂停播放', 'info');
+                return;
+            }
+            
+            player.src = audioUrl;
+            player.play().then(() => {
+                realtimeData.showToast('开始播放今日晨报', 'success');
+            }).catch(e => {
+                // 尝试播客
+                const podcastUrl = `http://101.126.40.132:8080/podcast_${date}.mp3`;
+                player.src = podcastUrl;
+                player.play().then(() => {
+                    realtimeData.showToast('开始播放今日播客', 'success');
+                }).catch(e2 => {
+                    realtimeData.showToast('音频加载失败，请检查网络', 'error');
+                });
+            });
+        }
+        
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
         }
