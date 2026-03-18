@@ -1,0 +1,176 @@
+/* 移动端响应式优化 - P011 */
+
+/* 基础响应式断点 */
+:root {
+    --mobile-breakpoint: 768px;
+    --tablet-breakpoint: 1024px;
+}
+
+/* 移动端基础适配 */
+@media (max-width: 768px) {
+    /* 容器调整 */
+    .container {
+        padding: 0.5rem;
+    }
+    
+    /* 网格布局改为单列 */
+    .grid-cols-2,
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 卡片全宽 */
+    .glass,
+    .card {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        border-radius: 0;
+    }
+    
+    /* 导航栏底部固定 */
+    .nav-desktop {
+        display: none;
+    }
+    
+    .nav-mobile {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-card);
+        border-top: 1px solid var(--border-color);
+        padding: 0.5rem;
+        z-index: 100;
+        justify-content: space-around;
+    }
+    
+    .nav-mobile a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+    }
+    
+    .nav-mobile a.active {
+        color: var(--accent-color);
+    }
+    
+    /* 字体大小调整 */
+    body {
+        font-size: 14px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.25rem;
+    }
+    
+    /* 表格横向滚动 */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+    
+    /* 图表高度调整 */
+    .chart-container {
+        height: 250px;
+    }
+    
+    /* 按钮全宽 */
+    .btn-mobile-full {
+        width: 100%;
+    }
+    
+    /* 持仓列表优化 */
+    .position-item {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .position-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* 底部留白（给导航栏） */
+    .pb-safe {
+        padding-bottom: 80px;
+    }
+}
+
+/* 平板适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .nav-mobile {
+        display: none;
+    }
+}
+
+/* 桌面端 */
+@media (min-width: 1025px) {
+    .nav-mobile {
+        display: none;
+    }
+}
+
+/* 触摸优化 */
+@media (pointer: coarse) {
+    /* 增大点击区域 */
+    button,
+    a,
+    .clickable {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* 禁用hover效果（触摸设备不友好） */
+    .hover\:scale-105:hover {
+        transform: none;
+    }
+}
+
+/* 横屏模式 */
+@media (max-width: 768px) and (orientation: landscape) {
+    .nav-mobile {
+        display: none;
+    }
+    
+    .landscape-hint {
+        display: block;
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-secondary);
+    }
+}
+
+/* iPhone安全区域适配 */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    .safe-area-bottom {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+    }
+}
+
+/* 深色模式移动端优化 */
+@media (max-width: 768px) {
+    .dark .nav-mobile {
+        background: #1e293b;
+        border-top-color: #334155;
+    }
+}
