@@ -116,13 +116,16 @@
             </div>
         </div>
 
-        <!-- 第二屏：市场情绪和收益对标 - 新增 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- 第二屏：市场情绪、收益对标、盈亏可视化 - 新增 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- 市场情绪卡片 -->
             <div id="sentiment-card"></div>
             
             <!-- 收益对标卡片 -->
             <div id="benchmark-card"></div>
+            
+            <!-- 盈亏可视化卡片 - 新增 -->
+            <div id="pnl-card"></div>
         </div>
 
         <!-- 第三屏：核心功能区 - 平铺展示，不隐藏 -->
@@ -1750,6 +1753,7 @@
     <script src="js/modules/position-news.js"></script>
     <script src="js/modules/benchmark.js"></script>
     <script src="js/modules/realtime-data.js"></script>
+    <script src="js/modules/pnl-visualization.js"></script>
     <script>
         // 初始化新模块
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1768,6 +1772,11 @@
             if (typeof benchmark !== 'undefined') {
                 const report = await benchmark.generateReport(portfolioData);
                 benchmark.renderCard('benchmark-card', report);
+            }
+            
+            // 加载盈亏可视化
+            if (typeof pnlVisualization !== 'undefined') {
+                pnlVisualization.renderWaterfall('pnl-card');
             }
             
             // 加载持仓新闻
