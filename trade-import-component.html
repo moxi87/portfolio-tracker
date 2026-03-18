@@ -1,0 +1,199 @@
+<!-- 交易记录批量导入组件 -->
+<div id="trade-import-panel" class="hidden fixed inset-0 bg-black/50 z-50">
+    <div class="absolute inset-x-4 top-20 max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <!-- 头部 -->
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-500 p-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-white"><i class="fas fa-file-import mr-2"></i>批量导入交易记录</h3>
+                <button onclick="closeTradeImportPanel()" class="text-white/80 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div㸬
+        </div>
+        
+        <!-- 内容区 -->
+        <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            
+            <!-- 步骤1: 选择文件 -->
+            <div class="space-y-2">
+                <label class="text-sm font-medium text-gray-700">1. 选择文件</label>
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-500 transition-colors">
+                    <input type="file" id="trade-file-input" accept=".csv,.json,.xlsx" class="hidden" onchange="handleTradeFileSelect(event)">
+                    <label for="trade-file-input" class="cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">点击上传 CSV / JSON / Excel 文件</p>
+                        <p class="text-xs text-gray-400 mt-1">支持格式: .csv, .json, .xlsx</p㸬
+                    </label㸬
+                </div>
+            </div>
+            
+            <!-- 步骤2: 粘贴数据 -->
+            <div class="space-y-2"㸬
+                <label class="text-sm font-medium text-gray-700">或 直接粘贴数据</label㸬
+                <textarea id="trade-paste-input" rows="6" class="w-full border rounded-lg p-3 text-sm font-mono" placeholder="日期,代码,名称,类型,价格,数量
+2024-03-19,000001,平安银行,买入,10.50,1000
+2024-03-19,600519,贵州茅台,买入,1680.00,100"></textarea>
+            </div>
+            
+            <!-- 步骤3: 预览和确认 -->
+            <div id="trade-preview-section" class="hidden space-y-2"㸬
+                <label class="text-sm font-medium text-gray-700">3. 数据预览</label>
+                <div class="bg-gray-50 rounded-lg p-3 text-sm"㸬
+                    <div class="flex justify-between mb-2"㸬
+                        <span id="trade-stats"㸬识别到 <strong>0</strong> 条记录</span㸬
+                        <span id="trade-errors" class="text-red-500 hidden"㸬有错误</span㸬
+                    </div>
+                    <div class="overflow-x-auto"㸬
+                        <table class="w-full text-xs"㸬
+                            <thead>
+                                <tr class="border-b"㸬
+                                    <th class="text-left py-2">日期</th>
+                                    <th class="text-left py-2">代码</th>
+                                    <th class="text-left py-2">名称</th㸬
+                                    <th class="text-left py-2">类型</th>
+                                    <th class="text-right py-2">价格</th㸬
+                                    <th class="text-right py-2">数量</th>
+                                    <th class="text-right py-2">金额</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trade-preview-body"㸬</tbody㸬
+                        </table>
+                    </div㸬
+                </div>
+            </div>
+            
+            <!-- 按钮 -->
+            <div class="flex gap-3 pt-4 border-t"㸬
+                <button onclick="downloadTradeTemplate()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"㸬
+                    <i class="fas fa-download mr-1"></i>下载模板
+                </button>
+                <div class="flex-1"></div>
+                <button onclick="previewTradeData()" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"㸬
+                    预览
+                </button>
+                <button onclick="confirmTradeImport()" id="trade-import-btn" class="px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:opacity-90 disabled:opacity-50" disabled>
+                    确认导入
+                </button㸬
+            </div㸬
+            
+        </div㸬
+    </div㸬
+</div㸬
+
+<script>
+// 当前解析的数据
+let currentTradeData = null;
+
+// 打开导入面板
+function openTradeImportPanel() {
+    document.getElementById('trade-import-panel').classList.remove('hidden');
+}
+
+// 关闭导入面板
+function closeTradeImportPanel() {
+    document.getElementById('trade-import-panel').classList.add('hidden');
+    currentTradeData = null;
+}
+
+// 处理文件选择
+function handleTradeFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('trade-paste-input').value = e.target.result;
+        previewTradeData();
+    };
+    reader.readAsText(file);
+}
+
+// 预览数据
+function previewTradeData() {
+    const content = document.getElementById('trade-paste-input').value.trim();
+    if (!content) {
+        alert('请先输入或粘贴数据');
+        return;
+    }
+    
+    // 检测格式
+    const isJSON = content.startsWith('[') || content.startsWith('{');
+    const fileType = isJSON ? 'json' : 'csv';
+    
+    try {
+        const result = tradeImport.processImport(content, fileType);
+        currentTradeData = result;
+        
+        // 显示统计
+        document.getElementById('trade-stats').innerHTML = 
+            `识别到 <strong>${result.total}</strong> 条记录，
+             有效 <strong class="text-green-600">${result.imported}</strong> 条，
+             失败 <strong class="${result.failed > 0 ? 'text-red-500' : ''}">${result.failed}</strong> 条`;
+        
+        // 显示错误提示
+        document.getElementById('trade-errors').classList.toggle('hidden', result.failed === 0);
+        
+        // 填充预览表格
+        const tbody = document.getElementById('trade-preview-body');
+        tbody.innerHTML = result.records.slice(0, 10).map(r => `
+            <tr class="border-b border-gray-100">
+                <td class="py-2">${r.date}</td>
+                <td class="py-2">${r.code}</td>
+                <td class="py-2">${r.name}</td>
+                <td class="py-2">${r.type === 'buy' ? '<span class="text-red-500">买入</span>' : '<span class="text-green-500">卖出</span>'}</td>
+                <td class="py-2 text-right">${r.price.toFixed(2)}</td>
+                <td class="py-2 text-right">${r.shares}</td>
+                <td class="py-2 text-right">${r.amount.toFixed(2)}</td>
+            </tr>
+        `).join('');
+        
+        if (result.records.length > 10) {
+            tbody.innerHTML += `
+                <tr>
+                    <td colspan="7" class="py-2 text-center text-gray-400">...还有 ${result.records.length - 10} 条记录...</td>
+                </tr>
+            `;
+        }
+        
+        // 显示预览区
+        document.getElementById('trade-preview-section').classList.remove('hidden');
+        
+        // 启用导入按钮
+        document.getElementById('trade-import-btn').disabled = result.imported === 0;
+        
+    } catch (e) {
+        alert('解析失败: ' + e.message);
+    }
+}
+
+// 确认导入
+function confirmTradeImport() {
+    if (!currentTradeData || currentTradeData.imported === 0) {
+        alert('没有可导入的数据');
+        return;
+    }
+    
+    const result = tradeImport.mergeToPortfolio(currentTradeData.records, portfolioData);
+    
+    alert(`导入成功!\n新增: ${result.added} 条\n重复: ${result.duplicates} 条\n总交易数: ${result.totalTrades} 条`);
+    
+    // 保存到本地存储
+    savePortfolioData();
+    
+    // 关闭面板
+    closeTradeImportPanel();
+    
+    // 刷新页面
+    location.reload();
+}
+
+// 下载模板
+function downloadTradeTemplate() {
+    const template = tradeImport.generateTemplate();
+    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '交易记录导入模板.csv';
+    link.click();
+}
+</script>
