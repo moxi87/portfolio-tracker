@@ -1646,8 +1646,8 @@
                 `;
             }
             
-            return audioManifest.slice(0, 7).map(audio => `
-                <div class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+            return audioManifest.slice(0, 10).map((audio, index) => `
+                <div class="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors" id="audio-item-${index}">
                     <div class="flex items-start gap-3">
                         <div class="w-12 h-12 rounded-xl ${audio.type === 'finance' ? 'bg-blue-500' : 'bg-green-500'} text-white flex items-center justify-center flex-shrink-0">
                             <i class="fas ${audio.type === 'finance' ? 'fa-chart-line' : 'fa-book-open'}"></i>
@@ -1662,11 +1662,39 @@
                                 <a href="./audio/${audio.file}" download class="p-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
                                     <i class="fas fa-download"></i>
                                 </a>
+                                <button onclick="deleteAudio('${audio.file}', ${index})" class="p-2 bg-red-100 text-red-500 rounded-lg hover:bg-red-200" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             `).join('');
+        }
+        
+        async function deleteAudio(file, index) {
+            // 删除音频
+            if (!confirm('确定删除这条音频？\n' + file)) {
+                return;
+            }
+            
+            // 从清单中移除
+            audioManifest = audioManifest.filter(a => a.file !== file);
+            
+            // 更新本地显示
+            document.getElementById('audioList').innerHTML = renderAudioList();
+            updateAudioBadge();
+            
+            // 显示提示
+            if (typeof realtimeData !== 'undefined') {
+                realtimeData.showToast('音频已从列表移除', 'success');
+            } else {
+                alert('音频已从列表移除');
+            }
+            
+            // 尝试更新manifest文件（需要GitHub Token才能实际删除文件）
+            console.log('音频删除:', file);
+            console.log('提示: 实际文件删除需要手动在GitHub仓库中操作');
         }
         
         function playAudio(file, btn) {
