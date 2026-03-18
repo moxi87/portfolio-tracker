@@ -348,14 +348,16 @@
             
             // 今日盈亏
             const pnlEl = document.getElementById('dailyPnL');
-            pnlEl.textContent = (summary.dailyPnL >= 0 ? '+' : '') + '¥' + summary.dailyPnL.toLocaleString();
-            pnlEl.className = 'text-2xl font-bold ' + (summary.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            const dailyPnL = summary.dailyPnL || 0;
+            pnlEl.textContent = (dailyPnL >= 0 ? '+' : '') + '¥' + Math.abs(dailyPnL).toLocaleString();
+            pnlEl.className = 'text-2xl font-bold ' + (dailyPnL >= 0 ? 'trend-up' : 'trend-down');
             
-            // 盈亏百分比
-            const totalValue = summary.totalValue;
-            const dailyPercent = totalValue > 0 ? (summary.dailyPnL / (totalValue - summary.dailyPnL) * 100).toFixed(2) : 0;
-            document.getElementById('dailyPercent').textContent = (summary.dailyPnL >= 0 ? '+' : '') + dailyPercent + '%';
-            document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (summary.dailyPnL >= 0 ? 'trend-up' : 'trend-down');
+            // 盈亏百分比（修正：使用昨日总市值作为分母）
+            const totalValue = summary.totalValue || 0;
+            const yesterdayValue = totalValue - dailyPnL;
+            const dailyPercent = yesterdayValue > 0 ? (dailyPnL / yesterdayValue * 100).toFixed(2) : 0;
+            document.getElementById('dailyPercent').textContent = (dailyPnL >= 0 ? '+' : '') + dailyPercent + '%';
+            document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (dailyPnL >= 0 ? 'trend-up' : 'trend-down');
             
             // 累计收益
             const totalPnlEl = document.getElementById('totalPnL');
@@ -544,13 +546,23 @@
             const stocks = data.stocks || [];
             const funds = data.funds || [];
             
-            // 计算汇总数据
+            // 计算汇总数据（修正：从dailyChange计算dailyPnL）
             const stockValue = stocks.reduce((sum, s) => sum + (s.marketValue || 0), 0);
             const fundValue = funds.reduce((sum, f) => sum + (f.marketValue || 0), 0);
             const totalValue = stockValue + fundValue;
             
-            const stockDailyPnL = stocks.reduce((sum, s) => sum + (s.dailyPnL || 0), 0);
-            const fundDailyPnL = funds.reduce((sum, f) => sum + (f.dailyPnL || 0), 0);
+            // 修正：如果dailyPnL不存在，从dailyChange计算
+            const calculateDailyPnL = (item) => {
+                if (item.dailyPnL !== undefined && item.dailyPnL !== 0) return item.dailyPnL;
+                if (item.dailyChange !== undefined && item.marketValue) {
+                    // 公式: 当日盈亏 = 市值 * 涨跌幅 / (100 + 涨跌幅)
+                    return item.marketValue * item.dailyChange / (100 + item.dailyChange);
+                }
+                return 0;
+            };
+            
+            const stockDailyPnL = stocks.reduce((sum, s) => sum + calculateDailyPnL(s), 0);
+            const fundDailyPnL = funds.reduce((sum, f) => sum + calculateDailyPnL(f), 0);
             const totalDailyPnL = stockDailyPnL + fundDailyPnL;
             
             const stockTotalPnL = stocks.reduce((sum, s) => sum + (s.totalPnL || 0), 0);
@@ -562,11 +574,12 @@
             
             // 今日盈亏
             const pnlEl = document.getElementById('dailyPnL');
-            pnlEl.textContent = (totalDailyPnL >= 0 ? '+' : '') + '¥' + totalDailyPnL.toLocaleString();
+            pnlEl.textContent = (totalDailyPnL >= 0 ? '+' : '') + '¥' + Math.abs(totalDailyPnL).toLocaleString();
             pnlEl.className = 'text-2xl font-bold ' + (totalDailyPnL >= 0 ? 'trend-up' : 'trend-down');
             
-            // 盈亏百分比
-            const pnlPercent = totalValue > 0 ? (totalDailyPnL / (totalValue - totalDailyPnL) * 100).toFixed(2) : 0;
+            // 盈亏百分比（修正：使用昨日总市值作为分母）
+            const yesterdayValue = totalValue - totalDailyPnL;
+            const pnlPercent = yesterdayValue > 0 ? (totalDailyPnL / yesterdayValue * 100).toFixed(2) : 0;
             document.getElementById('dailyPercent').textContent = (totalDailyPnL >= 0 ? '+' : '') + pnlPercent + '%';
             document.getElementById('dailyPercent').className = 'text-xs mt-1 ' + (totalDailyPnL >= 0 ? 'trend-up' : 'trend-down');
             
@@ -655,8 +668,9 @@
                     const marketValue = stock.marketValue || (stock.shares * stock.price);
                     const pnl = stock.totalPnL || 0;
                     const pnlPercent = stock.returnRate || 0;
-                    const dailyPnl = stock.dailyPnL || 0;
                     const dailyChange = stock.dailyChange || 0;
+                    // 修正：从dailyChange计算dailyPnl
+                    const dailyPnl = stock.dailyPnL || (marketValue * dailyChange / (100 + dailyChange)) || 0;
                     const cost = stock.cost || 0;
                     
                     stocksHtml += `
@@ -722,8 +736,10 @@
                 funds.forEach(fund => {
                     const pnl = fund.totalPnL || 0;
                     const pnlPercent = fund.returnRate || 0;
-                    const dailyPnl = fund.dailyPnL || 0;
                     const dailyChange = fund.dailyChange || 0;
+                    // 修正：从dailyChange计算dailyPnl
+                    const marketValue = fund.marketValue || 0;
+                    const dailyPnl = fund.dailyPnL || (marketValue * dailyChange / (100 + dailyChange)) || 0;
                     
                     fundsHtml += `
                         <div class="flex-shrink-0 w-44 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
