@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600,700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        * { font-family: 'Inter', 'Noto Sans SC', sans-serif; }
+        * { font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; }
         .glass { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
         .gradient-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .gradient-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
@@ -1725,7 +1725,148 @@
         
         // 页面加载时加载音频清单
         document.addEventListener('DOMContentLoaded', loadAudioManifest);
-        function showAttributionPanel() { alert('收益归因功能开发中'); }
+        // 显示收益归因面板
+        function showAttributionPanel() {
+            const account = portfolioData.accounts[currentAccountId];
+            if (!account) return;
+
+            const stocks = account.data.stocks || [];
+            const funds = account.data.funds || [];
+            
+            // 计算各行业/类型贡献
+            const contributions = [];
+            let totalPnL = 0;
+            
+            // 股票贡献
+            stocks.forEach(stock => {
+                const pnl = stock.totalPnL || 0;
+                totalPnL += pnl;
+                contributions.push({
+                    name: stock.name,
+                    type: '股票',
+                    pnl: pnl,
+                    returnRate: stock.returnRate || 0,
+                    weight: stock.weight || 0
+                });
+            });
+            
+            // 基金贡献
+            funds.forEach(fund => {
+                const pnl = fund.totalPnL || 0;
+                totalPnL += pnl;
+                contributions.push({
+                    name: fund.name,
+                    type: fund.market || '基金',
+                    pnl: pnl,
+                    returnRate: fund.returnRate || 0,
+                    weight: fund.weight || 0
+                });
+            });
+            
+            // 按盈亏排序
+            contributions.sort((a, b) => b.pnl - a.pnl);
+            
+            // 计算正负贡献
+            const positive = contributions.filter(c => c.pnl > 0);
+            const negative = contributions.filter(c => c.pnl < 0);
+            
+            const html = `
+                <div id="attributionPanel" class="fixed inset-0 bg-black/50 z-50" onclick="if(event.target===this)closePanel('attributionPanel')">
+                    <div class="absolute inset-x-0 bottom-0 md:relative md:inset-0 md:flex md:items-center md:justify-center">
+                        <div class="bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[600px] max-h-[80vh] overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-pink-500 to-rose-500 text-white">
+                                <h3 class="font-bold text-lg"><i class="fas fa-chart-pie mr-2"></i>收益归因</h3>
+                                <button onclick="closePanel('attributionPanel')" class="text-white/80 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            <div class="p-4 overflow-y-auto max-h-[60vh]">
+                                <!-- 总览 -->
+                                <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl mb-4">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <div class="text-xs text-gray-500 mb-1">总盈亏</div>
+                                            <div class="text-2xl font-bold ${totalPnL >= 0 ? 'text-red-500' : 'text-green-500'}">
+                                                ${totalPnL >= 0 ? '+' : ''}¥${(totalPnL/10000).toFixed(2)}万
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-xs text-gray-500 mb-1">贡献统计</div>
+                                            <div class="text-lg font-bold">
+                                                <span class="text-red-500">${positive.length}</span> <span class="text-gray-400">盈利</span>
+                                                <span class="text-gray-400 mx-1">/</span>
+                                                <span class="text-green-500">${negative.length}</span> <span class="text-gray-400">亏损</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 正贡献 -->
+                                ${positive.length > 0 ? `
+                                <div class="mb-4">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                                        <span class="font-bold text-gray-700">盈利贡献</span>
+                                        <span class="text-xs text-gray-400">(${positive.length}只)</span>
+                                    </div>
+                                    <div class="space-y-2">
+                                        ${positive.map(c => `
+                                            <div class="p-3 bg-red-50 rounded-xl">
+                                                <div class="flex justify-between items-center">
+                                                    <div>
+                                                        <div class="font-medium text-gray-800">${c.name}</div>
+                                                        <div class="text-xs text-gray-500">${c.type} · 权重${c.weight.toFixed(1)}%</div>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <div class="font-bold text-red-500">+¥${(c.pnl/10000).toFixed(2)}万</div>
+                                                        <div class="text-xs text-red-400">+${c.returnRate.toFixed(2)}%</div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2 h-1.5 bg-red-200 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-red-500 rounded-full" style="width: ${Math.min(c.returnRate, 100)}%"></div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                                
+                                <!-- 负贡献 -->
+                                ${negative.length > 0 ? `
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <span class="font-bold text-gray-700">亏损贡献</span>
+                                        <span class="text-xs text-gray-400">(${negative.length}只)</span>
+                                    </div>
+                                    <div class="space-y-2">
+                                        ${negative.map(c => `
+                                            <div class="p-3 bg-green-50 rounded-xl">
+                                                <div class="flex justify-between items-center">
+                                                    <div>
+                                                        <div class="font-medium text-gray-800">${c.name}</div>
+                                                        <div class="text-xs text-gray-500">${c.type} · 权重${c.weight.toFixed(1)}%</div>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <div class="font-bold text-green-500">¥${(c.pnl/10000).toFixed(2)}万</div>
+                                                        <div class="text-xs text-green-400">${c.returnRate.toFixed(2)}%</div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2 h-1.5 bg-green-200 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-green-500 rounded-full" style="width: ${Math.min(Math.abs(c.returnRate), 100)}%"></div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', html);
+            document.body.style.overflow = 'hidden';
+        }
         function changePeriod(p) { 
             document.querySelectorAll('.period-btn').forEach(b => {
                 b.classList.remove('bg-indigo-500', 'text-white');
@@ -1734,10 +1875,21 @@
             event.target.classList.remove('bg-gray-200', 'text-gray-600');
             event.target.classList.add('bg-indigo-500', 'text-white');
         }
-        // 播放今日晨报音频
+        // 播放今日晨报音频 - 修复版
         function playTodayAudio() {
             const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-            const audioUrl = `http://101.126.40.132:8080/finance_${date}.mp3`;
+            
+            // 先从manifest中查找今日音频
+            const todayAudio = audioManifest.find(a => a.date === date);
+            
+            if (!todayAudio) {
+                if (typeof realtimeData !== 'undefined') {
+                    realtimeData.showToast('今日音频尚未生成', 'info');
+                } else {
+                    alert('今日音频尚未生成');
+                }
+                return;
+            }
             
             // 创建或获取音频播放器
             let player = document.getElementById('globalAudioPlayer');
@@ -1751,22 +1903,26 @@
             // 如果正在播放，暂停
             if (!player.paused) {
                 player.pause();
-                realtimeData.showToast('已暂停播放', 'info');
+                if (typeof realtimeData !== 'undefined') {
+                    realtimeData.showToast('已暂停播放', 'info');
+                }
                 return;
             }
             
+            // 使用本地音频文件
+            const audioUrl = `./audio/${todayAudio.file}`;
             player.src = audioUrl;
             player.play().then(() => {
-                realtimeData.showToast('开始播放今日晨报', 'success');
+                if (typeof realtimeData !== 'undefined') {
+                    realtimeData.showToast(`开始播放: ${todayAudio.title}`, 'success');
+                }
             }).catch(e => {
-                // 尝试播客
-                const podcastUrl = `http://101.126.40.132:8080/podcast_${date}.mp3`;
-                player.src = podcastUrl;
-                player.play().then(() => {
-                    realtimeData.showToast('开始播放今日播客', 'success');
-                }).catch(e2 => {
-                    realtimeData.showToast('音频加载失败，请检查网络', 'error');
-                });
+                console.error('音频播放失败:', e);
+                if (typeof realtimeData !== 'undefined') {
+                    realtimeData.showToast('音频加载失败，请检查文件是否存在', 'error');
+                } else {
+                    alert('音频加载失败，请检查文件是否存在');
+                }
             });
         }
         
