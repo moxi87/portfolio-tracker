@@ -1,6 +1,6 @@
 {
   "version": "2026-03-18",
-  "lastUpdate": "2026-03-18T15:33:27.347696",
+  "lastUpdate": "2026-03-18T20:03:06.718944",
   "accounts": [
     {
       "id": "default",
@@ -136,7 +136,7 @@
           "returnRate": -1.88,
           "market": "A股",
           "weight": 81.75,
-          "dailyPnL": -2478.0,
+          "dailyPnL": 0.0,
           "dailyChange": -1.67
         },
         {
@@ -150,7 +150,7 @@
           "returnRate": 225.89,
           "market": "A股",
           "weight": 12.67,
-          "dailyPnL": 22798.8,
+          "dailyPnL": 0.0,
           "dailyChange": -5.41
         },
         {
@@ -164,7 +164,7 @@
           "returnRate": -47.11,
           "market": "A股",
           "weight": 3.35,
-          "dailyPnL": 210.0,
+          "dailyPnL": 0.0,
           "dailyChange": -3.11
         },
         {
@@ -178,7 +178,7 @@
           "returnRate": -5.38,
           "market": "A股",
           "weight": 2.23,
-          "dailyPnL": -3.0,
+          "dailyPnL": 0.0,
           "dailyChange": 0.31
         }
       ]
@@ -188,11 +188,11 @@
     "totalAssets": 425001.62,
     "fundValue": 163778.62,
     "stockValue": 261223.0,
-    "dailyPnL": 20527.8,
+    "dailyPnL": 0.0,
     "totalPnL": 33988.76,
     "returnRate": 8.69,
     "fundDailyPnL": 0.0,
-    "stockDailyPnL": 20527.8
+    "stockDailyPnL": 0.0
   },
   "history": [
     {
@@ -219,7 +219,7 @@
     {
       "date": "2026-03-18",
       "totalAssets": 425001.62,
-      "dailyPnL": 20527.8,
+      "dailyPnL": 0.0,
       "fundValue": 163778.62,
       "stockValue": 261223.0
     }
