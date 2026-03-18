@@ -15,7 +15,10 @@ const benchmark = {
         try {
             // 使用腾讯财经API
             const response = await fetch(`https://qt.gtimg.cn/q=${indexCode}`);
-            const text = await response.text();
+            const buffer = await response.arrayBuffer();
+            // 解码GBK编码
+            const decoder = new TextDecoder('gbk');
+            const text = decoder.decode(buffer);
             
             // 解析数据
             const match = text.match(/v_([a-z0-9]+)="([^"]+)"/);
