@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 飞书授权</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        h1 { margin-bottom: 10px; }
+        p { opacity: 0.9; margin-bottom: 30px; }
+        .btn {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .permissions {
+            text-align: left;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .permissions li { margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 OpenClaw 授权</h1>
+        <p>点击下方按钮授权 OpenClaw 访问你的飞书</p>
+        
+        <ul class="permissions">
+            <li>✅ Bitable 表格操作</li>
+            <li>✅ 发送消息/卡片</li>
+            <li>✅ 云空间文件管理</li>
+            <li>✅ 飞书文档读写</li>
+        </ul>
+        
+        <a href="https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=cli_a916c4c94ff89cc4&redirect_uri=https%3A%2F%2Fopenclaw.ai%2Fauth%2Fcallback&scope=bitable%3Aapp%20im%3Amessage%3Asend%20drive%3Afile%3Aread%20drive%3Afile%3Awrite&state=auth_3SGGYHBG" class="btn">
+            立即授权
+        </a>
+    </div>
+</body>
+</html>
