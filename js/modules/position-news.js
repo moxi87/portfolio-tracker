@@ -146,8 +146,19 @@ const positionNews = {
         const container = document.getElementById(containerId);
         if (!container) return;
         
+        // 演示数据提示横幅
+        const demoBanner = `
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+                <div class="flex items-center gap-2 text-amber-700">
+                    <i class="fas fa-flask"></i>
+                    <span class="text-sm font-medium">演示数据</span>
+                    <span class="text-xs text-amber-600">- 真实新闻接入开发中</span>
+                </div>
+            </div>
+        `;
+        
         if (!news || news.length === 0) {
-            container.innerHTML = '<div class="text-center py-8 text-gray-400">暂无新闻</div>';
+            container.innerHTML = demoBanner + '<div class="text-center py-8 text-gray-400">暂无新闻</div>';
             return;
         }
         
@@ -163,7 +174,7 @@ const positionNews = {
             neutral: 'text-gray-500'
         };
         
-        let html = '<div class="space-y-3">';
+        let html = demoBanner + '<div class="space-y-3">';
         
         news.forEach(item => {
             html += `
