@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Pro v5.10 | 专业持仓管理系统</title>
+    <title>Portfolio Pro v5.11 | 专业持仓管理系统</title>
     <meta name="description" content="Portfolio Pro - 专业持仓管理系统">
     
     <!-- 预连接关键域名 -->
@@ -76,6 +76,40 @@
         /* 隐藏类 */
         .hidden { display: none !important; }
         .invisible { visibility: hidden; }
+        /* 移动端底部安全区域 */
+        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+        .pb-safe { padding-bottom: max(8px, env(safe-area-inset-bottom, 8px)); }
+        
+        /* 移动端手势滑动指示器 */
+        .swipe-indicator { display: flex; justify-content: center; gap: 6px; margin: 8px 0; }
+        .swipe-indicator .dot { width: 6px; height: 6px; border-radius: 50%; background: #e5e7eb; transition: background 0.3s; }
+        .swipe-indicator .dot.active { background: #6366f1; }
+        
+        /* 移动端触摸反馈 */
+        @media (hover: none) {
+            .feature-card:active, button:active { transform: scale(0.98); transition: transform 0.1s; }
+        }
+        
+        /* 底部导航激活状态 */
+        #bottomNav button.active { color: #6366f1; }
+        
+        /* 快速操作面板动画 */
+        #quickActionPanel { transition: opacity 0.3s ease; }
+        #quickActionPanel.hidden { opacity: 0; pointer-events: none; }
+        #quickActionPanel > div { animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* 深色模式 */
+        body.dark-mode { background: #111827; color: #f9fafb; }
+        body.dark-mode .glass { background: rgba(31, 41, 55, 0.95); }
+        body.dark-mode .text-gray-800 { color: #f9fafb; }
+        body.dark-mode .text-gray-700 { color: #e5e7eb; }
+        body.dark-mode .text-gray-600 { color: #d1d5db; }
+        body.dark-mode .text-gray-500 { color: #9ca3af; }
+        body.dark-mode .border-gray-200 { border-color: #374151; }
+        body.dark-mode .bg-white { background: #1f2937; }
+        body.dark-mode #bottomNav { background: #1f2937; border-color: #374151; }
+
         
         /* 股票卡片骨架 */
         .stock-skeleton {
@@ -131,7 +165,7 @@
                     <div>
                         <h1 class="text-lg font-bold text-gray-800">Portfolio Pro</h1>
                         <div class="flex items-center gap-2 text-xs text-gray-500">
-                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-medium">v5.10</span>
+                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-medium">v5.11</span>
                             <span id="currentDate">--</span>
                             <span id="liveIndicator" class="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
                             <span id="liveText">初始化</span>
@@ -378,6 +412,65 @@
     <!-- 面板容器 -->
     <div id="panelContainer"></div>
 
+
+    <!-- 移动端优化：底部导航栏 -->
+    <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50 safe-area-bottom">
+        <div class="flex justify-around items-center py-2 pb-safe">
+            <button onclick="scrollToSection('dashboard')" class="flex flex-col items-center p-2 text-indigo-600">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-xs mt-1">首页</span>
+            </button>
+            <button onclick="scrollToSection('holdings')" class="flex flex-col items-center p-2 text-gray-500">
+                <i class="fas fa-chart-pie text-lg"></i>
+                <span class="text-xs mt-1">持仓</span>
+            </button>
+            <button onclick="showQuickActions()" class="flex flex-col items-center p-2 -mt-4">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white flex items-center justify-center shadow-lg">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </button>
+            <button onclick="showAnalysisTools()" class="flex flex-col items-center p-2 text-gray-500">
+                <i class="fas fa-chart-line text-lg"></i>
+                <span class="text-xs mt-1">分析</span>
+            </button>
+            <button onclick="showSettings()" class="flex flex-col items-center p-2 text-gray-500">
+                <i class="fas fa-cog text-lg"></i>
+                <span class="text-xs mt-1">设置</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 移动端优化：快速操作面板 -->
+    <div id="quickActionPanel" class="fixed inset-0 bg-black/50 z-50 hidden" onclick="closeQuickActions()">
+        <div class="absolute bottom-20 left-4 right-4 bg-white rounded-2xl p-4" onclick="event.stopPropagation()">
+            <div class="grid grid-cols-3 gap-4">
+                <button onclick="playTodayAudio(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100">
+                    <i class="fas fa-play text-purple-600 text-xl mb-2"></i>
+                    <span class="text-xs text-gray-700">播放晨报</span>
+                </button>
+                <button onclick="showAccountsPanel(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100">
+                    <i class="fas fa-wallet text-indigo-600 text-xl mb-2"></i>
+                    <span class="text-xs text-gray-700">账户</span>
+                </button>
+                <button onclick="showRebalancePanel(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100">
+                    <i class="fas fa-balance-scale text-teal-600 text-xl mb-2"></i>
+                    <span class="text-xs text-gray-700">再平衡</span>
+                </button>
+                <button onclick="showRiskPanel(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-red-50 to-red-100">
+                    <i class="fas fa-shield-alt text-red-600 text-xl mb-2"></i>
+                    <span class="text-xs text-gray-700">风险</span>
+                </button>
+                <button onclick="showAttributionPanel(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-pink-50 to-pink-100">
+                    <i class="fas fa-chart-pie text-pink-600 text-xl mb-2"></i>
+                    <span class="text-xs text-gray-700">归因</span>
+                </button>
+                <button onclick="realtimeData.refresh(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100">
+                    <i class="fas fa-sync text-blue-600 text-xl mb-2"></i>
+                    <span class="text-xs text-gray-700">刷新</span>
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- 异步加载脚本 -->
     <script src="https://cdn.tailwindcss.com" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
@@ -997,6 +1090,92 @@
             }
         }
 
+
+        // ========== 移动端优化功能 ==========
+        
+        // 滚动到指定区域
+        function scrollToSection(section) {
+            const targetMap = {
+                'dashboard': 'dashboardGrid',
+                'holdings': 'content-stocks'
+            };
+            const target = document.getElementById(targetMap[section]);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        // 显示快速操作面板
+        function showQuickActions() {
+            document.getElementById('quickActionPanel').classList.remove('hidden');
+        }
+        
+        // 关闭快速操作面板
+        function closeQuickActions() {
+            document.getElementById('quickActionPanel').classList.add('hidden');
+        }
+        
+        // 触摸手势支持 - Tab滑动切换
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const tabs = ['stocks', 'funds', 'news', 'history'];
+        let currentTabIndex = 0;
+        
+        function initTouchGestures() {
+            const container = document.querySelector('.glass.rounded-2xl.overflow-hidden');
+            if (!container) return;
+            
+            container.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            
+            container.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+        }
+        
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0 && currentTabIndex < tabs.length - 1) {
+                    // 向左滑，下一个tab
+                    currentTabIndex++;
+                    switchTab(tabs[currentTabIndex]);
+                } else if (diff < 0 && currentTabIndex > 0) {
+                    // 向右滑，上一个tab
+                    currentTabIndex--;
+                    switchTab(tabs[currentTabIndex]);
+                }
+            }
+        }
+        
+        // 更新Tab切换函数以记录当前索引
+        const originalSwitchTab = switchTab;
+        switchTab = function(tab) {
+            originalSwitchTab(tab);
+            currentTabIndex = tabs.indexOf(tab);
+        };
+        
+        // 初始化触摸手势
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initTouchGestures, 500);
+        });
+        
+        // 底部导航激活状态更新
+        function updateBottomNavActive(section) {
+            document.querySelectorAll('#bottomNav button').forEach(btn => {
+                btn.classList.remove('active', 'text-indigo-600');
+                btn.classList.add('text-gray-500');
+            });
+            const activeBtn = document.querySelector(`#bottomNav button[onclick*="${section}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'text-indigo-600');
+                activeBtn.classList.remove('text-gray-500');
+            }
+        }
         // ========== 其他功能函数 ==========
         function showAccountsPanel() {
             // 面板实现...
