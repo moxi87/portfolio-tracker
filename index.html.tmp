@@ -1,0 +1,90 @@
+        /* 移动端底部安全区域 */
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        .pb-safe {
+            padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+        }
+        
+        /* 移动端手势滑动指示器 */
+        .swipe-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: 8px 0;
+        }
+        .swipe-indicator .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            transition: background 0.3s;
+        }
+        .swipe-indicator .dot.active {
+            background: #6366f1;
+        }
+        
+        /* 移动端触摸反馈 */
+        @media (hover: none) {
+            .feature-card:active,
+            button:active {
+                transform: scale(0.98);
+                transition: transform 0.1s;
+            }
+        }
+        
+        /* 底部导航激活状态 */
+        #bottomNav button.active {
+            color: #6366f1;
+        }
+        
+        /* 快速操作面板动画 */
+        #quickActionPanel {
+            transition: opacity 0.3s ease;
+        }
+        #quickActionPanel.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #quickActionPanel > div {
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* 隐藏类 */
+        .hidden { display: none !important; }
+        .invisible { visibility: hidden; }
+        
+        /* 深色模式 */
+        body.dark-mode {
+            background: #111827;
+            color: #f9fafb;
+        }
+        body.dark-mode .glass {
+            background: rgba(31, 41, 55, 0.95);
+        }
+        body.dark-mode .text-gray-800 {
+            color: #f9fafb;
+        }
+        body.dark-mode .text-gray-700 {
+            color: #e5e7eb;
+        }
+        body.dark-mode .text-gray-600 {
+            color: #d1d5db;
+        }
+        body.dark-mode .text-gray-500 {
+            color: #9ca3af;
+        }
+        body.dark-mode .border-gray-200 {
+            border-color: #374151;
+        }
+        body.dark-mode .bg-white {
+            background: #1f2937;
+        }
+        body.dark-mode #bottomNav {
+            background: #1f2937;
+            border-color: #374151;
+        }
