@@ -1,6 +1,15 @@
 [
   {
     "date": "20260323",
+    "title": "财经晨报 | 03月23日",
+    "type": "finance",
+    "file": "finance_20260323.mp3",
+    "duration": "约3分钟",
+    "description": "市场活跃期。霍尔木兹海峡48小时通牒，地缘风险升级；马斯克启动TERAFAB超级芯片厂计划；建议仓位70-80%",
+    "createdAt": "2026-03-23T05:30:00+08:00"
+  },
+  {
+    "date": "20260323",
     "title": "乐活播客 | 03月23日",
     "type": "podcast",
     "file": "podcast_20260323.mp3",
