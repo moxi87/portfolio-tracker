@@ -16,6 +16,11 @@ const CONFIG = {
     
     // API 配置
     API: {
+        // 后端服务地址（支持环境变量覆盖或手动修改）
+        // 生产环境：'' 表示使用相对路径（同域部署）
+        // 开发环境：'http://localhost:5000'
+        BASE: window.API_BASE || '',
+        
         SINA_QUOTE: 'https://hq.sinajs.cn/list={code}',
         FUND_NAV: 'https://fundgz.1234567.com.cn/js/{code}.js?rt={timestamp}',
         CORS_PROXIES: [

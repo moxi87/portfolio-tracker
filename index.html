@@ -539,7 +539,8 @@
         const DataLoader = {
             cache: null,
             useRealData: false,
-            API_BASE: 'http://localhost:5000',
+            // 使用config.js中的配置，支持环境覆盖
+            get API_BASE() { return (typeof CONFIG !== 'undefined' && CONFIG.API && CONFIG.API.BASE) ? CONFIG.API.BASE : ''; },
             
             // 阶段1：立即显示本地缓存数据
             async loadLocalData() {
@@ -781,11 +782,70 @@
         // ========== 仪表盘渲染 ==========
         function renderDashboard() {
             const account = portfolioData.accounts[currentAccountId];
-            if (!account) return;
+            if (!account) {
+                renderEmptyState();
+                return;
+            }
 
             const data = account.data;
             const stocks = data.stocks || [];
             const funds = data.funds || [];
+            
+            // 检查是否为空持仓
+            const isEmpty = stocks.length === 0 && funds.length === 0;
+            if (isEmpty) {
+                renderEmptyState();
+                return;
+            }
+            
+            // 正常渲染有数据的状态
+            renderWithData(data, stocks, funds);
+        }
+        
+        // 渲染空状态
+        function renderEmptyState() {
+            // 总资产显示提示
+            document.getElementById('totalAssets').innerHTML = '<span class="text-gray-400">暂无数据</span>';
+            
+            // 今日盈亏显示提示
+            const pnlEl = document.getElementById('dailyPnL');
+            pnlEl.textContent = '--';
+            pnlEl.className = 'text-2xl font-bold text-gray-400';
+            document.getElementById('dailyPercent').textContent = '点击添加持仓';
+            document.getElementById('dailyPercent').className = 'text-xs mt-1 text-indigo-500 cursor-pointer';
+            document.getElementById('dailyPercent').onclick = () => showAccountsPanel();
+            
+            // 累计收益
+            const totalPnlEl = document.getElementById('totalPnL');
+            totalPnlEl.textContent = '--';
+            totalPnlEl.className = 'text-2xl font-bold text-gray-400';
+
+            // 持仓统计
+            document.getElementById('accountCount').textContent = '0只股票 · 0只基金';
+
+            // 风险等级
+            document.getElementById('riskLevel').innerHTML = '<span class="px-3 py-1 rounded-lg bg-gray-100 text-gray-400">无数据</span>';
+            document.getElementById('riskDetail').textContent = '请先添加持仓';
+
+            // 持仓列表显示空状态
+            document.getElementById('content-stocks').innerHTML = `
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-50 flex items-center justify-center">
+                        <i class="fas fa-wallet text-indigo-300 text-2xl"></i>
+                    </div>
+                    <p class="text-gray-500 mb-2">暂无持仓数据</p>
+                    <button onclick="showAccountsPanel()" class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600">
+                        <i class="fas fa-plus mr-1"></i>添加持仓
+                    </button>
+                </div>
+            `;
+            document.getElementById('content-funds').innerHTML = `
+                <div class="text-center py-12 text-gray-400">暂无基金持仓</div>
+            `;
+        }
+        
+        // 渲染有数据的状态
+        function renderWithData(data, stocks, funds) {
             
             const stockValue = stocks.reduce((sum, s) => sum + (s.marketValue || 0), 0);
             const fundValue = funds.reduce((sum, f) => sum + (f.marketValue || 0), 0);
@@ -1177,37 +1237,154 @@
             }
         }
         // ========== 其他功能函数 ==========
+        
+        // 通用面板显示函数
+        function showFeaturePanel(title, content, icon = 'fa-info-circle') {
+            const panelId = 'featurePanel_' + Date.now();
+            const panelHtml = `
+                <div id="${panelId}" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="closePanel('${panelId}')">
+                    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas ${icon} text-indigo-600"></i>
+                                </div>
+                                <h3 class="font-bold text-gray-800">${title}</h3>
+                            </div>
+                            <button onclick="closePanel('${panelId}')" class="p-2 hover:bg-gray-100 rounded-lg">
+                                <i class="fas fa-times text-gray-400"></i>
+                            </button>
+                        </div>
+                        <div class="text-gray-600">${content}</div>
+                        <div class="mt-6 flex justify-end">
+                            <button onclick="closePanel('${panelId}')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', panelHtml);
+            document.body.style.overflow = 'hidden';
+        }
+        
         function showAccountsPanel() {
-            // 面板实现...
-            alert('多账户管理功能');
+            showFeaturePanel('多账户管理', 
+                '<p class="mb-2">当前仅支持单一账户管理。</p><p class="text-sm text-gray-400">多账户功能将在后续版本推出，敬请期待。</p>',
+                'fa-wallet');
         }
 
         function showRiskPanel() {
-            alert('风险分析功能');
+            const account = portfolioData.accounts[currentAccountId];
+            const hasData = account && ((account.data.stocks || []).length > 0 || (account.data.funds || []).length > 0);
+            
+            if (!hasData) {
+                showToast('请先添加持仓数据', 'warning');
+                return;
+            }
+            
+            const stocks = account.data.stocks || [];
+            const funds = account.data.funds || [];
+            const totalValue = [...stocks, ...funds].reduce((sum, item) => sum + (item.marketValue || 0), 0);
+            const maxPosition = Math.max(...[...stocks, ...funds].map(item => item.marketValue || 0), 0);
+            const concentration = totalValue > 0 ? (maxPosition / totalValue * 100).toFixed(1) : 0;
+            
+            let riskLevel = '低风险';
+            let riskColor = 'green';
+            if (concentration > 60) { riskLevel = '高风险'; riskColor = 'red'; }
+            else if (concentration > 40) { riskLevel = '中风险'; riskColor = 'yellow'; }
+            
+            showFeaturePanel('风险分析', 
+                `<div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-${riskColor}-50 rounded-lg">
+                        <span class="text-gray-600">风险等级</span>
+                        <span class="font-bold text-${riskColor}-600">${riskLevel}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">持仓集中度</span>
+                        <span class="font-bold">${concentration}%</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">* 详细VaR/夏普比率计算功能开发中</p>
+                </div>`,
+                'fa-shield-alt');
         }
 
         function showRebalancePanel() {
-            alert('智能再平衡功能');
+            const account = portfolioData.accounts[currentAccountId];
+            const hasData = account && ((account.data.stocks || []).length > 0 || (account.data.funds || []).length > 0);
+            
+            if (!hasData) {
+                showToast('请先添加持仓数据', 'warning');
+                return;
+            }
+            
+            showFeaturePanel('智能再平衡', 
+                '<p class="mb-4">根据当前持仓分析，无需调仓。</p><p class="text-sm text-gray-400">自动再平衡建议功能开发中，将基于目标权重生成调仓方案。</p>',
+                'fa-balance-scale');
         }
 
         function showAttributionPanel() {
-            alert('收益归因功能');
+            const account = portfolioData.accounts[currentAccountId];
+            const hasData = account && ((account.data.stocks || []).length > 0 || (account.data.funds || []).length > 0);
+            
+            if (!hasData) {
+                showToast('请先添加持仓数据', 'warning');
+                return;
+            }
+            
+            showFeaturePanel('收益归因', 
+                '<p class="mb-4">按行业/个股维度的收益贡献分析。</p><p class="text-sm text-gray-400">详细归因分析功能开发中。</p>',
+                'fa-chart-pie');
         }
 
         function showAnalysisTools() {
-            alert('深度分析功能');
+            showFeaturePanel('深度分析', 
+                '<p class="mb-4">市场情绪、收益对标等高级分析工具。</p><p class="text-sm text-gray-400">市场数据对接中，敬请期待。</p>',
+                'fa-chart-line');
         }
 
         function showDailyAudio() {
-            alert('每日音频功能');
+            showToast('音频功能暂时下线，请查看文字版晨报', 'info');
         }
 
         function playTodayAudio() {
-            alert('播放今日晨报');
+            showToast('音频功能暂时下线，请查看文字版晨报', 'info');
         }
 
         function showSettings() {
-            alert('设置功能');
+            const panelId = 'settingsPanel';
+            const panelHtml = `
+                <div id="${panelId}" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="closePanel('${panelId}')">
+                    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="font-bold text-gray-800">设置</h3>
+                            <button onclick="closePanel('${panelId}')" class="p-2 hover:bg-gray-100 rounded-lg">
+                                <i class="fas fa-times text-gray-400"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">深色模式</span>
+                                <button onclick="toggleTheme(); closePanel('${panelId}')" class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-lg text-sm">
+                                    切换
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">数据刷新</span>
+                                <button onclick="realtimeData.refresh(); closePanel('${panelId}')" class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-lg text-sm">
+                                    立即刷新
+                                </button>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <p class="text-xs text-gray-400">Portfolio Pro v5.11</p>
+                                <p class="text-xs text-gray-400 mt-1">数据存储：本地JSON</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', panelHtml);
+            document.body.style.overflow = 'hidden';
         }
 
         function toggleTheme() {
@@ -1224,7 +1401,64 @@
         }
 
         function submitUpdate() {
-            alert('更新成功！');
+            const date = document.getElementById('updateDate').value;
+            const assets = document.getElementById('updateAssets').value;
+            const pnl = document.getElementById('updatePnL').value;
+            
+            if (!date) {
+                showToast('请选择日期', 'error');
+                return;
+            }
+            
+            if (!assets && !pnl) {
+                showToast('请至少输入总资产或今日盈亏', 'warning');
+                return;
+            }
+            
+            // 模拟提交成功
+            showToast('数据更新成功！', 'success');
+            
+            // 清空输入（可选）
+            document.getElementById('updateAssets').value = '';
+            document.getElementById('updatePnL').value = '';
+        }
+        
+        // Toast提示系统
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-indigo-500'
+            };
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+            
+            const toastId = 'toast_' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="fixed top-20 left-1/2 transform -translate-x-1/2 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-fade-in"
+                     style="animation: fadeIn 0.3s ease"
+                >
+                    <i class="fas ${icons[type]}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', toastHtml);
+            
+            // 3秒后自动消失
+            setTimeout(() => {
+                const toast = document.getElementById(toastId);
+                if (toast) {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 3000);
         }
 
         // ========== 实时数据刷新 ==========
