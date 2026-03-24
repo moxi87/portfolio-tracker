@@ -130,69 +130,70 @@
           "name": "比亚迪",
           "shares": 2100,
           "cost": 103.635,
-          "price": 102.87,
-          "marketValue": 216027.0,
-          "totalPnL": -1605.57,
-          "returnRate": -0.74,
+          "price": 105.89,
+          "marketValue": 222369.0,
+          "totalPnL": 4735.5,
+          "returnRate": 2.18,
           "market": "A股",
           "weight": 54.77,
           "dailyPnL": 0.0,
-          "dailyChange": 0.0
+          "dailyChange": -1.62
         },
         {
           "code": "159326",
           "name": "电网设备",
           "shares": 5400,
           "cost": 1.881,
-          "price": 1.908,
-          "marketValue": 10303.2,
-          "totalPnL": 144.0,
-          "returnRate": 1.44,
+          "price": 1.846,
+          "marketValue": 9968.4,
+          "totalPnL": -189.0,
+          "returnRate": -1.86,
           "market": "A股",
           "weight": 2.61,
           "dailyPnL": 0.0,
-          "dailyChange": 0.0
+          "dailyChange": 2.33
         },
         {
           "code": "603019",
           "name": "中科曙光",
           "shares": 100,
           "cost": 165.432,
-          "price": 85.39,
-          "marketValue": 8539.0,
-          "totalPnL": -8004.15,
-          "returnRate": -48.38,
+          "price": 79.88,
+          "marketValue": 7988.0,
+          "totalPnL": -8555.2,
+          "returnRate": -51.71,
           "market": "A股",
           "weight": 2.16,
           "dailyPnL": 0.0,
-          "dailyChange": 0.0
+          "dailyChange": 0.38
         },
         {
           "code": "603993",
           "name": "洛阳钼业",
           "shares": 300,
           "cost": 20.514,
-          "price": 19.42,
-          "marketValue": 5826.0,
-          "totalPnL": -331.2,
-          "returnRate": -5.38,
+          "price": 17.06,
+          "marketValue": 5118.0,
+          "totalPnL": -1036.2,
+          "returnRate": -16.84,
           "market": "A股",
           "weight": 1.48,
           "dailyPnL": 0.0,
-          "dailyChange": 0.0
+          "dailyChange": 3.46
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 404473.82,
+    "totalAssets": 409222.02,
     "fundValue": 163778.62,
-    "stockValue": 240695.2,
+    "stockValue": 245443.4,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
-    "stockDailyPnL": 0.0
+    "stockDailyPnL": 0.0,
+    "lastUpdate": "2026-03-24T09:38:21.043718"
   },
   "history": [
     {
