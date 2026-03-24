@@ -14,11 +14,12 @@
           "nav": 2.8389,
           "marketValue": 45263.05,
           "dailyPnL": 0.0,
-          "totalPnL": 0.0,
-          "returnRate": 0,
+          "totalPnL": 19558.39,
+          "returnRate": 76.09,
           "market": "A股",
           "weight": 11.52,
-          "dailyChange": -1.45
+          "dailyChange": -1.45,
+          "cost": 25704.66
         },
         {
           "code": "008586",
@@ -27,11 +28,12 @@
           "nav": 1.3208,
           "marketValue": 20837.68,
           "dailyPnL": 0.0,
-          "totalPnL": 0.0,
-          "returnRate": 0,
+          "totalPnL": 6837.68,
+          "returnRate": 48.84,
           "market": "A股",
           "weight": 5.3,
-          "dailyChange": -1.33
+          "dailyChange": -1.33,
+          "cost": 14000.0
         },
         {
           "code": "000043",
@@ -40,11 +42,12 @@
           "nav": 5.517,
           "marketValue": 37006.05,
           "dailyPnL": 0.0,
-          "totalPnL": 0.0,
-          "returnRate": 0,
+          "totalPnL": 4006.05,
+          "returnRate": 12.14,
           "market": "美股",
           "weight": 9.05,
-          "dailyChange": -0.89
+          "dailyChange": -0.89,
+          "cost": 33000.0
         },
         {
           "code": "007904",
@@ -53,11 +56,12 @@
           "nav": 1.5688,
           "marketValue": 16728.43,
           "dailyPnL": 0.0,
-          "totalPnL": 0.0,
-          "returnRate": 0,
+          "totalPnL": 728.43,
+          "returnRate": 4.55,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": 0.18
+          "dailyChange": 0.18,
+          "cost": 16000.0
         },
         {
           "code": "016440",
@@ -66,11 +70,12 @@
           "nav": 1.1696,
           "marketValue": 10566.83,
           "dailyPnL": 0.0,
-          "totalPnL": 0.0,
-          "returnRate": 0,
+          "totalPnL": -25.06,
+          "returnRate": -0.24,
           "market": "A股",
           "weight": 2.76,
-          "dailyChange": 1.07
+          "dailyChange": 1.07,
+          "cost": 10591.89
         },
         {
           "code": "007467",
@@ -79,11 +84,12 @@
           "nav": 1.5852,
           "marketValue": 9945.42,
           "dailyPnL": 0.0,
-          "totalPnL": 0.0,
-          "returnRate": 0,
+          "totalPnL": -482.35,
+          "returnRate": -4.63,
           "market": "A股",
           "weight": 2.56,
-          "dailyChange": 1.22
+          "dailyChange": 1.22,
+          "cost": 10427.77
         },
         {
           "code": "013231",
@@ -92,11 +98,12 @@
           "nav": 1.0778,
           "marketValue": 8756.43,
           "dailyPnL": 0.0,
-          "totalPnL": 0.0,
-          "returnRate": 0,
+          "totalPnL": -955.91,
+          "returnRate": -9.84,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": 0.04
+          "dailyChange": 0.04,
+          "cost": 9712.34
         },
         {
           "code": "015283",
@@ -105,11 +112,12 @@
           "nav": 1.1456,
           "marketValue": 10251.99,
           "dailyPnL": 0.0,
-          "totalPnL": 0.0,
-          "returnRate": 0,
+          "totalPnL": -1752.33,
+          "returnRate": -14.6,
           "market": "港股",
           "weight": 2.74,
-          "dailyChange": 0.06
+          "dailyChange": 0.06,
+          "cost": 12004.32
         },
         {
           "code": "YEB",
@@ -119,9 +127,10 @@
           "marketValue": 461.9,
           "dailyPnL": 0.02,
           "totalPnL": 98.45,
-          "returnRate": 0,
+          "returnRate": 27.09,
           "market": "现金",
-          "weight": 0.11
+          "weight": 0.11,
+          "cost": 363.45
         }
       ],
       "stocks": [
