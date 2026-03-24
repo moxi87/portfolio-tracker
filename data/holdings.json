@@ -11,105 +11,105 @@
           "code": "003984",
           "name": "嘉实新能源新材料股票A",
           "shares": 1,
-          "nav": 2.9217,
-          "marketValue": 46583.2,
+          "nav": 2.8389,
+          "marketValue": 2.84,
           "dailyPnL": 0.0,
           "totalPnL": 20878.54,
           "returnRate": 81.22,
           "market": "A股",
           "weight": 11.52,
-          "dailyChange": -2.58
+          "dailyChange": 0.27
         },
         {
           "code": "008586",
           "name": "华夏人工智能ETF联接D",
           "shares": 1,
-          "nav": 1.3581,
-          "marketValue": 21426.15,
+          "nav": 1.3208,
+          "marketValue": 1.32,
           "dailyPnL": 0.0,
           "totalPnL": 7426.15,
           "returnRate": 53.04,
           "market": "A股",
           "weight": 5.3,
-          "dailyChange": -2.52
+          "dailyChange": -0.07
         },
         {
           "code": "000043",
           "name": "嘉实美国成长股票(QDII)",
           "shares": 1,
-          "nav": 5.457,
-          "marketValue": 36603.59,
+          "nav": 5.517,
+          "marketValue": 5.52,
           "dailyPnL": 0.0,
           "totalPnL": 3603.59,
           "returnRate": 10.92,
           "market": "美股",
           "weight": 9.05,
-          "dailyChange": 1.37
+          "dailyChange": -0.89
         },
         {
           "code": "007904",
           "name": "华宝海外新能源汽车(QDII)A",
           "shares": 1,
-          "nav": 1.6109,
-          "marketValue": 17177.35,
+          "nav": 1.5688,
+          "marketValue": 1.57,
           "dailyPnL": 0.0,
           "totalPnL": 1177.34,
           "returnRate": 7.36,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": -1.18
+          "dailyChange": 0.85
         },
         {
           "code": "016440",
           "name": "华夏中证红利质量ETF联接A",
           "shares": 1,
-          "nav": 1.2338,
-          "marketValue": 11146.85,
+          "nav": 1.1696,
+          "marketValue": 1.17,
           "dailyPnL": 0.0,
           "totalPnL": 554.96,
           "returnRate": 5.24,
           "market": "A股",
           "weight": 2.76,
-          "dailyChange": -0.28
+          "dailyChange": 1.12
         },
         {
           "code": "007467",
           "name": "华泰柏瑞中证红利低波动ETF联接C",
           "shares": 1,
-          "nav": 1.6515,
-          "marketValue": 10361.38,
+          "nav": 1.5852,
+          "marketValue": 1.59,
           "dailyPnL": 0.0,
           "totalPnL": -66.39,
           "returnRate": -0.63,
           "market": "A股",
           "weight": 2.56,
-          "dailyChange": 0.24
+          "dailyChange": 0.77
         },
         {
           "code": "013231",
           "name": "博时智选量化多因子股票C",
           "shares": 1,
-          "nav": 1.0991,
-          "marketValue": 8929.48,
+          "nav": 1.0778,
+          "marketValue": 1.08,
           "dailyPnL": 0.0,
           "totalPnL": -782.86,
           "returnRate": -6.83,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": -0.6
+          "dailyChange": 0.3
         },
         {
           "code": "015283",
           "name": "华安恒生科技ETF联接(QDII)C",
           "shares": 1,
-          "nav": 1.2391,
-          "marketValue": 11088.72,
+          "nav": 1.1456,
+          "marketValue": 1.15,
           "dailyPnL": 0.0,
           "totalPnL": -1415.6,
           "returnRate": -11.32,
           "market": "港股",
           "weight": 2.74,
-          "dailyChange": -0.2
+          "dailyChange": 0.67
         },
         {
           "code": "YEB",
@@ -130,70 +130,70 @@
           "name": "比亚迪",
           "shares": 2100,
           "cost": 103.635,
-          "price": 105.89,
-          "marketValue": 222369.0,
-          "totalPnL": 4735.5,
-          "returnRate": 2.18,
+          "price": 105.55,
+          "marketValue": 221655.0,
+          "totalPnL": 4021.5,
+          "returnRate": 1.85,
           "market": "A股",
           "weight": 54.77,
           "dailyPnL": 0.0,
-          "dailyChange": -1.62
+          "dailyChange": -1.93
         },
         {
           "code": "159326",
           "name": "电网设备",
           "shares": 5400,
           "cost": 1.881,
-          "price": 1.846,
-          "marketValue": 9968.4,
-          "totalPnL": -189.0,
-          "returnRate": -1.86,
+          "price": 1.827,
+          "marketValue": 9865.8,
+          "totalPnL": -291.6,
+          "returnRate": -2.87,
           "market": "A股",
           "weight": 2.61,
           "dailyPnL": 0.0,
-          "dailyChange": 2.33
+          "dailyChange": 1.27
         },
         {
           "code": "603019",
           "name": "中科曙光",
           "shares": 100,
           "cost": 165.432,
-          "price": 79.88,
-          "marketValue": 7988.0,
-          "totalPnL": -8555.2,
-          "returnRate": -51.71,
+          "price": 79.75,
+          "marketValue": 7975.0,
+          "totalPnL": -8568.2,
+          "returnRate": -51.79,
           "market": "A股",
           "weight": 2.16,
           "dailyPnL": 0.0,
-          "dailyChange": 0.38
+          "dailyChange": 0.21
         },
         {
           "code": "603993",
           "name": "洛阳钼业",
           "shares": 300,
           "cost": 20.514,
-          "price": 17.06,
-          "marketValue": 5118.0,
-          "totalPnL": -1036.2,
-          "returnRate": -16.84,
+          "price": 16.95,
+          "marketValue": 5085.0,
+          "totalPnL": -1069.2,
+          "returnRate": -17.37,
           "market": "A股",
           "weight": 1.48,
           "dailyPnL": 0.0,
-          "dailyChange": 3.46
+          "dailyChange": 2.79
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 409222.02,
-    "fundValue": 163778.62,
-    "stockValue": 245443.4,
+    "totalAssets": 245058.94,
+    "fundValue": 478.14,
+    "stockValue": 244580.8,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-03-24T09:38:21.043718"
+    "lastUpdate": "2026-03-24T09:41:34.976592"
   },
   "history": [
     {
