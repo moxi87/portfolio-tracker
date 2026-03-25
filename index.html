@@ -172,6 +172,9 @@
                         </div>
                     </div>
                 </div>
+                <!-- 账户切换器 -->
+                <div id="accountSwitcher" class="mr-2"></div>
+                
                 <div class="flex items-center gap-2">
                     <button onclick="playTodayAudio()" class="px-3 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium hover:opacity-90 flex items-center gap-2 shadow-lg shadow-purple-200">
                         <i class="fas fa-play"></i>
@@ -475,6 +478,7 @@
     <script src="https://cdn.tailwindcss.com" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" defer></script>
+    <script src="account_manager.js"></script>
     
     <script>
         // ========== 加载状态管理器 ==========
@@ -623,25 +627,11 @@
             },
             
             transformData(data) {
-                const account = data.accounts[0];
+                // 使用AccountManager转换多账户格式
+                const accounts = AccountManager.transformFromRaw(data);
+                
                 return {
-                    accounts: {
-                        'default': {
-                            id: 'default',
-                            name: account.name,
-                            type: account.type,
-                            icon: 'fa-wallet',
-                            color: '#6366f1',
-                            data: {
-                                date: data.lastUpdate,
-                                totalAssets: data.summary.totalAssets,
-                                dailyPnL: data.summary.dailyPnL,
-                                totalPnL: data.summary.totalPnL,
-                                stocks: account.stocks || [],
-                                funds: account.funds || []
-                            }
-                        }
-                    },
+                    accounts: accounts,
                     history: data.history || []
                 };
             },
@@ -682,6 +672,18 @@
             // 阶段1：快速显示本地数据
             const localData = await DataLoader.loadLocalData();
             portfolioData = localData;
+            
+            // 初始化账户管理器
+            if (typeof accountManager !== 'undefined') {
+                accountManager.init(portfolioData.accounts);
+                accountManager.onSwitch((accountId, account) => {
+                    currentAccountId = accountId;
+                    renderDashboard();
+                });
+            } else {
+                currentAccountId = Object.keys(portfolioData.accounts)[0] || 'default';
+            }
+            
             renderDashboard();
             LoadingManager.hideSkeleton('assets');
             LoadingManager.hideSkeleton('daily');
