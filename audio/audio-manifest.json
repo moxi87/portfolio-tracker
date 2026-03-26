@@ -133,5 +133,14 @@
     "duration": "约5分钟",
     "description": "市场情绪分析+主题解读",
     "createdAt": "2026-03-25T17:03:17.437823"
+  },
+  {
+    "date": "20260326",
+    "title": "财经晨报 | 03月26日",
+    "type": "finance",
+    "file": "finance_20260326.mp3",
+    "duration": "约5分钟",
+    "description": "市场情绪分析+主题解读",
+    "createdAt": "2026-03-26T09:04:18.309064"
   }
 ]
