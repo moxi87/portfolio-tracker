@@ -18,7 +18,7 @@
           "returnRate": 81.35,
           "market": "A股",
           "weight": 11.52,
-          "dailyChange": 3.28,
+          "dailyChange": 3.31,
           "cost": 25704.66
         },
         {
@@ -32,7 +32,7 @@
           "returnRate": 51.16,
           "market": "A股",
           "weight": 5.3,
-          "dailyChange": -0.21,
+          "dailyChange": -0.23,
           "cost": 14000.0
         },
         {
@@ -60,7 +60,7 @@
           "returnRate": 1.57,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": 0.97,
+          "dailyChange": 0.91,
           "cost": 16000.0
         },
         {
@@ -74,7 +74,7 @@
           "returnRate": 2.41,
           "market": "A股",
           "weight": 2.76,
-          "dailyChange": 1.39,
+          "dailyChange": 1.42,
           "cost": 10591.89
         },
         {
@@ -88,7 +88,7 @@
           "returnRate": -2.32,
           "market": "A股",
           "weight": 2.56,
-          "dailyChange": -0.3,
+          "dailyChange": -0.36,
           "cost": 10427.77
         },
         {
@@ -102,7 +102,7 @@
           "returnRate": -8.96,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": 0.72,
+          "dailyChange": 0.37,
           "cost": 9712.34
         },
         {
@@ -116,7 +116,7 @@
           "returnRate": -13.52,
           "market": "港股",
           "weight": 2.74,
-          "dailyChange": 0.79,
+          "dailyChange": 0.3,
           "cost": 12004.32
         },
         {
@@ -181,28 +181,28 @@
           "name": "洛阳钼业",
           "shares": 300,
           "cost": 20.514,
-          "price": 17.59,
-          "marketValue": 5277.0,
-          "totalPnL": -877.2,
-          "returnRate": -14.25,
+          "price": 17.58,
+          "marketValue": 5274.0,
+          "totalPnL": -880.2,
+          "returnRate": -14.3,
           "market": "A股",
           "weight": 1.48,
           "dailyPnL": 0.0,
-          "dailyChange": 0.57
+          "dailyChange": 0.51
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 405469.41,
+    "totalAssets": 405466.41,
     "fundValue": 160794.41,
-    "stockValue": 244675.0,
+    "stockValue": 244672.0,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-03-27T15:00:03.018977"
+    "lastUpdate": "2026-03-27T16:00:02.810922"
   },
   "history": [
     {
