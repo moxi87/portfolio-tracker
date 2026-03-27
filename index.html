@@ -432,9 +432,9 @@
                     <i class="fas fa-plus"></i>
                 </div>
             </button>
-            <button onclick="showAnalysisTools()" class="flex flex-col items-center p-2 text-gray-500">
-                <i class="fas fa-chart-line text-lg"></i>
-                <span class="text-xs mt-1">分析</span>
+                        <button onclick="showCalendarView()" class="flex flex-col items-center p-2 text-gray-500">
+                <i class="fas fa-calendar-alt text-lg"></i>
+                <span class="text-xs mt-1">日历</span>
             </button>
             <button onclick="showSettings()" class="flex flex-col items-center p-2 text-gray-500">
                 <i class="fas fa-cog text-lg"></i>
@@ -463,9 +463,13 @@
                     <i class="fas fa-shield-alt text-red-600 text-xl mb-2"></i>
                     <span class="text-xs text-gray-700">风险</span>
                 </button>
-                <button onclick="showAttributionPanel(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-pink-50 to-pink-100">
+                                <button onclick="showAttributionPanel(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-pink-50 to-pink-100">
                     <i class="fas fa-chart-pie text-pink-600 text-xl mb-2"></i>
                     <span class="text-xs text-gray-700">归因</span>
+                </button>
+                <button onclick="showCalendarView(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100">
+                    <i class="fas fa-calendar-alt text-orange-600 text-xl mb-2"></i>
+                    <span class="text-xs text-gray-700">日历</span>
                 </button>
                 <button onclick="realtimeData.refresh(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100">
                     <i class="fas fa-sync text-blue-600 text-xl mb-2"></i>
@@ -1353,6 +1357,249 @@
             showToast('音频功能暂时下线，请查看文字版晨报', 'info');
         }
 
+        // ========== 日历视图 ==========
+        let calendarCurrentDate = new Date();
+        let calendarViewMode = 'month'; // 'month' | 'list'
+        let calendarTradeRecords = [];
+        
+        async function loadTradeRecords() {
+            try {
+                const response = await fetch('data/trade-records.json?t=' + Date.now());
+                const data = await response.json();
+                calendarTradeRecords = data.records || [];
+            } catch (e) {
+                console.log('无交易记录数据');
+                calendarTradeRecords = [];
+            }
+        }
+        
+        function showCalendarView() {
+            loadTradeRecords().then(() => {
+                renderCalendarPanel();
+            });
+        }
+        
+        function renderCalendarPanel() {
+            const panelId = 'calendarPanel';
+            const existing = document.getElementById(panelId);
+            if (existing) existing.remove();
+            
+            const year = calendarCurrentDate.getFullYear();
+            const month = calendarCurrentDate.getMonth();
+            const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+            
+            const panelHtml = `
+                <div id="${panelId}" class="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center" onclick="closePanel('${panelId}')">
+                    <div class="bg-white rounded-t-2xl md:rounded-2xl w-full max-w-lg max-h-[85vh] overflow-hidden shadow-xl" onclick="event.stopPropagation()">
+                        <!-- 头部 -->
+                        <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                            <div class="flex items-center gap-2">
+                                <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                                    <i class="fas fa-calendar-alt text-orange-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">投资日历</h3>
+                                    <p class="text-xs text-gray-400">交易记录 · 分红派息 · 市场事件</p>
+                                </div>
+                            </div>
+                            <button onclick="closePanel('${panelId}')" class="p-2 hover:bg-gray-100 rounded-lg">
+                                <i class="fas fa-times text-gray-400"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 视图切换 -->
+                        <div class="flex p-2 gap-2 border-b border-gray-100">
+                            <button onclick="switchCalendarView('month')" class="flex-1 py-2 rounded-lg text-sm ${calendarViewMode === 'month' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-50'}">
+                                <i class="fas fa-calendar mr-1"></i>月视图
+                            </button>
+                            <button onclick="switchCalendarView('list')" class="flex-1 py-2 rounded-lg text-sm ${calendarViewMode === 'list' ? 'bg-orange-100 text-orange-600' : 'text-gray-50 hover:bg-gray-50'}">
+                                <i class="fas fa-list mr-1"></i>列表视图
+                            </button>
+                        </div>
+                        
+                        <!-- 月视图 -->
+                        <div id="calendarMonthView" class="${calendarViewMode === 'month' ? '' : 'hidden'} p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                    <i class="fas fa-chevron-left text-gray-400"></i>
+                                </button>
+                                <span class="font-bold text-gray-800">${year}年 ${monthNames[month]}</span>
+                                <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2">
+                                <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                            </div>
+                            <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+                                ${generateCalendarGrid(year, month)}
+                            </div>
+                        </div>
+                        
+                        <!-- 列表视图 -->
+                        <div id="calendarListView" class="${calendarViewMode === 'list' ? '' : 'hidden'} p-4 overflow-y-auto max-h-[50vh]">
+                            ${generateTradeList()}
+                        </div>
+                        
+                        <!-- 底部统计 -->
+                        <div class="p-4 border-t border-gray-100 bg-gray-50">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">本月交易</span>
+                                <span class="font-medium text-gray-800">${getMonthTradeCount()} 笔</span>
+                            </div>
+                            <div class="flex justify-between text-sm mt-2">
+                                <span class="text-gray-500">累计交易</span>
+                                <span class="font-medium text-gray-800">${calendarTradeRecords.length} 笔</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', panelHtml);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function generateCalendarGrid(year, month) {
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            let html = '';
+            
+            // 空白填充
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="h-10"></div>';
+            }
+            
+            // 日期
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayTrades = calendarTradeRecords.filter(r => r.date === dateStr);
+                const hasTrade = dayTrades.length > 0;
+                const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+                
+                let indicator = '';
+                if (hasTrade) {
+                    const buyCount = dayTrades.filter(t => t.type === 'buy').length;
+                    const sellCount = dayTrades.filter(t => t.type === 'sell').length;
+                    if (buyCount > 0 && sellCount > 0) {
+                        indicator = '<div class="w-1.5 h-1.5 rounded-full bg-purple-500 mx-auto mt-0.5"></div>';
+                    } else if (buyCount > 0) {
+                        indicator = '<div class="w-1.5 h-1.5 rounded-full bg-red-500 mx-auto mt-0.5"></div>';
+                    } else {
+                        indicator = '<div class="w-1.5 h-1.5 rounded-full bg-green-500 mx-auto mt-0.5"></div>';
+                    }
+                }
+                
+                html += `
+                    <div class="h-10 flex flex-col items-center justify-center rounded-lg ${isToday ? 'bg-orange-100' : 'hover:bg-gray-50'} cursor-pointer"
+                         onclick="showDayTrades('${dateStr}')">
+                        <span class="text-sm ${isToday ? 'text-orange-600 font-bold' : 'text-gray-700'}">${day}</span>
+                        ${indicator}
+                    </div>
+                `;
+            }
+            
+            return html;
+        }
+        
+        function generateTradeList() {
+            if (calendarTradeRecords.length === 0) {
+                return `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-inbox text-4xl mb-3"></i>
+                        <p>暂无交易记录</p>
+                        <p class="text-xs mt-2">交易数据将在同步时自动记录</p>
+                    </div>
+                `;
+            }
+            
+            // 按日期分组
+            const grouped = {};
+            calendarTradeRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            calendarTradeRecords.forEach(r => {
+                if (!grouped[r.date]) grouped[r.date] = [];
+                grouped[r.date].push(r);
+            });
+            
+            let html = '';
+            Object.keys(grouped).forEach(date => {
+                const trades = grouped[date];
+                const dateObj = new Date(date);
+                const dateStr = `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+                
+                html += `
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${dateStr}</span>
+                            <span class="text-xs text-gray-400">${trades.length}笔交易</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${trades.map(t => `
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full ${t.type === 'buy' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'} flex items-center justify-center text-xs">
+                                            ${t.type === 'buy' ? '买' : '卖'}
+                                        </span>
+                                        <span class="text-sm font-medium text-gray-800">${t.name || t.code}</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm text-gray-800">${t.shares}股 @ ¥${t.price}</div>
+                                        <div class="text-xs text-gray-400">¥${(t.shares * t.price).toLocaleString()}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            return html;
+        }
+        
+        function switchCalendarView(mode) {
+            calendarViewMode = mode;
+            renderCalendarPanel();
+        }
+        
+        function changeMonth(delta) {
+            calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + delta);
+            renderCalendarPanel();
+        }
+        
+        function showDayTrades(dateStr) {
+            const dayTrades = calendarTradeRecords.filter(r => r.date === dateStr);
+            if (dayTrades.length === 0) return;
+            
+            const dateObj = new Date(dateStr);
+            const title = `${dateObj.getMonth() + 1}月${dateObj.getDate()}日交易记录`;
+            
+            const content = dayTrades.map(t => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-2">
+                    <div>
+                        <div class="font-medium text-gray-800">${t.name || t.code}</div>
+                        <div class="text-xs text-gray-400">${t.type === 'buy' ? '买入' : '卖出'} · ${t.shares}股</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-medium ${t.type === 'buy' ? 'text-red-600' : 'text-green-600'}">
+                            ${t.type === 'buy' ? '-' : '+'}¥${(t.shares * t.price).toLocaleString()}
+                        </div>
+                        <div class="text-xs text-gray-400">@ ¥${t.price}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            showFeaturePanel(title, content, 'fa-list');
+        }
+        
+        function getMonthTradeCount() {
+            const year = calendarCurrentDate.getFullYear();
+            const month = calendarCurrentDate.getMonth();
+            return calendarTradeRecords.filter(r => {
+                const d = new Date(r.date);
+                return d.getFullYear() === year && d.getMonth() === month;
+            }).length;
+        }
+
         function showSettings() {
             const panelId = 'settingsPanel';
             const panelHtml = `
@@ -1378,7 +1625,7 @@
                                 </button>
                             </div>
                             <div class="p-3 bg-gray-50 rounded-lg">
-                                <p class="text-xs text-gray-400">Portfolio Pro v5.11</p>
+                                <p class="text-xs text-gray-400">Portfolio Pro v5.13</p>
                                 <p class="text-xs text-gray-400 mt-1">数据存储：本地JSON</p>
                             </div>
                         </div>
