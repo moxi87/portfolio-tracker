@@ -18,7 +18,7 @@
           "returnRate": 87.34,
           "market": "A股",
           "weight": 11.52,
-          "dailyChange": -0.31,
+          "dailyChange": -0.64,
           "cost": 25704.66
         },
         {
@@ -32,7 +32,7 @@
           "returnRate": 50.85,
           "market": "A股",
           "weight": 5.3,
-          "dailyChange": -0.02,
+          "dailyChange": -0.65,
           "cost": 14000.0
         },
         {
@@ -60,7 +60,7 @@
           "returnRate": 3.32,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": -0.02,
+          "dailyChange": -0.21,
           "cost": 16000.0
         },
         {
@@ -74,7 +74,7 @@
           "returnRate": 3.81,
           "market": "A股",
           "weight": 2.76,
-          "dailyChange": 0.31,
+          "dailyChange": -0.14,
           "cost": 10591.89
         },
         {
@@ -88,7 +88,7 @@
           "returnRate": -2.66,
           "market": "A股",
           "weight": 2.56,
-          "dailyChange": 0.83,
+          "dailyChange": 0.93,
           "cost": 10427.77
         },
         {
@@ -102,7 +102,7 @@
           "returnRate": -8.63,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": -0.15,
+          "dailyChange": -0.12,
           "cost": 9712.34
         },
         {
@@ -116,7 +116,7 @@
           "returnRate": -13.23,
           "market": "港股",
           "weight": 2.74,
-          "dailyChange": -1.58,
+          "dailyChange": -2.12,
           "cost": 12004.32
         },
         {
@@ -139,14 +139,14 @@
           "name": "比亚迪",
           "shares": 2100,
           "cost": 103.635,
-          "price": 106.26,
-          "marketValue": 223146.0,
-          "totalPnL": 5512.5,
-          "returnRate": 2.53,
+          "price": 105.99,
+          "marketValue": 222579.0,
+          "totalPnL": 4945.5,
+          "returnRate": 2.27,
           "market": "A股",
           "weight": 54.77,
           "dailyPnL": 0.0,
-          "dailyChange": 0.91
+          "dailyChange": 0.66
         },
         {
           "code": "159326",
@@ -167,42 +167,42 @@
           "name": "中科曙光",
           "shares": 100,
           "cost": 165.432,
-          "price": 80.6,
-          "marketValue": 8060.0,
-          "totalPnL": -8483.2,
-          "returnRate": -51.28,
+          "price": 79.92,
+          "marketValue": 7992.0,
+          "totalPnL": -8551.2,
+          "returnRate": -51.69,
           "market": "A股",
           "weight": 2.16,
           "dailyPnL": 0.0,
-          "dailyChange": -1.02
+          "dailyChange": -1.85
         },
         {
           "code": "603993",
           "name": "洛阳钼业",
           "shares": 300,
           "cost": 20.514,
-          "price": 17.42,
-          "marketValue": 5226.0,
-          "totalPnL": -928.2,
-          "returnRate": -15.08,
+          "price": 17.31,
+          "marketValue": 5193.0,
+          "totalPnL": -961.2,
+          "returnRate": -15.62,
           "market": "A股",
           "weight": 1.48,
           "dailyPnL": 0.0,
-          "dailyChange": -0.91
+          "dailyChange": -1.54
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 408282.87,
+    "totalAssets": 407614.87,
     "fundValue": 161709.67,
-    "stockValue": 246573.2,
+    "stockValue": 245905.2,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-03-30T13:00:03.123643"
+    "lastUpdate": "2026-03-30T14:00:03.268829"
   },
   "history": [
     {
