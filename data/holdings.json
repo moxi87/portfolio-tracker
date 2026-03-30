@@ -32,7 +32,7 @@
           "returnRate": 50.85,
           "market": "A股",
           "weight": 5.3,
-          "dailyChange": -0.36,
+          "dailyChange": -0.37,
           "cost": 14000.0
         },
         {
@@ -60,7 +60,7 @@
           "returnRate": 3.32,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": -0.04,
+          "dailyChange": -0.05,
           "cost": 16000.0
         },
         {
@@ -74,7 +74,7 @@
           "returnRate": 3.81,
           "market": "A股",
           "weight": 2.76,
-          "dailyChange": 0.16,
+          "dailyChange": 0.22,
           "cost": 10591.89
         },
         {
@@ -88,7 +88,7 @@
           "returnRate": -2.66,
           "market": "A股",
           "weight": 2.56,
-          "dailyChange": 1.03,
+          "dailyChange": 0.97,
           "cost": 10427.77
         },
         {
@@ -102,7 +102,7 @@
           "returnRate": -8.63,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": 0.07,
+          "dailyChange": -0.17,
           "cost": 9712.34
         },
         {
@@ -116,7 +116,7 @@
           "returnRate": -13.23,
           "market": "港股",
           "weight": 2.74,
-          "dailyChange": -1.72,
+          "dailyChange": -1.77,
           "cost": 12004.32
         },
         {
@@ -139,14 +139,14 @@
           "name": "比亚迪",
           "shares": 2100,
           "cost": 103.635,
-          "price": 106.07,
-          "marketValue": 222747.0,
-          "totalPnL": 5113.5,
-          "returnRate": 2.35,
+          "price": 106.05,
+          "marketValue": 222705.0,
+          "totalPnL": 5071.5,
+          "returnRate": 2.33,
           "market": "A股",
           "weight": 54.77,
           "dailyPnL": 0.0,
-          "dailyChange": 0.73
+          "dailyChange": 0.71
         },
         {
           "code": "159326",
@@ -194,15 +194,15 @@
     }
   ],
   "summary": {
-    "totalAssets": 407816.87,
+    "totalAssets": 407774.87,
     "fundValue": 161709.67,
-    "stockValue": 246107.2,
+    "stockValue": 246065.2,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-03-30T15:00:03.477769"
+    "lastUpdate": "2026-03-30T16:00:03.491734"
   },
   "history": [
     {
