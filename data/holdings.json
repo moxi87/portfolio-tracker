@@ -139,28 +139,28 @@
           "name": "比亚迪",
           "shares": 2100,
           "cost": 103.635,
-          "price": 105.3,
-          "marketValue": 221130.0,
-          "totalPnL": 3496.5,
-          "returnRate": 1.61,
+          "price": 0.0,
+          "marketValue": 0.0,
+          "totalPnL": -217633.5,
+          "returnRate": -100.0,
           "market": "A股",
           "weight": 54.77,
           "dailyPnL": 0.0,
-          "dailyChange": 2.09
+          "dailyChange": -100.0
         },
         {
           "code": "159326",
           "name": "电网设备",
           "shares": 5400,
           "cost": 1.881,
-          "price": 1.875,
-          "marketValue": 10125.0,
-          "totalPnL": -32.4,
-          "returnRate": -0.32,
+          "price": 0.0,
+          "marketValue": 0.0,
+          "totalPnL": -10157.4,
+          "returnRate": -100.0,
           "market": "A股",
           "weight": 2.61,
           "dailyPnL": 0.0,
-          "dailyChange": 0.7
+          "dailyChange": -100.0
         },
         {
           "code": "603019",
@@ -194,15 +194,15 @@
     }
   ],
   "summary": {
-    "totalAssets": 404426.73,
+    "totalAssets": 173171.73,
     "fundValue": 159754.73,
-    "stockValue": 244672.0,
+    "stockValue": 13417.0,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-03-30T08:00:04.313157"
+    "lastUpdate": "2026-03-30T09:00:04.983131"
   },
   "history": [
     {
