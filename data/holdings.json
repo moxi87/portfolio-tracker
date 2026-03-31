@@ -116,7 +116,7 @@
           "returnRate": -14.75,
           "market": "港股",
           "weight": 2.74,
-          "dailyChange": -0.87,
+          "dailyChange": -0.82,
           "cost": 12004.32
         },
         {
@@ -202,7 +202,7 @@
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-03-31T16:00:04.174654"
+    "lastUpdate": "2026-03-31T20:00:04.336437"
   },
   "history": [
     {
