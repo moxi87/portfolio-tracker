@@ -208,30 +208,27 @@
     {
       "date": "2026-03-10",
       "totalAssets": 394589.49,
-      "dailyPnL": 1512.86,
-      "fundValue": 164967.49,
-      "stockValue": 229622.0
+      "dailyPnL": 1512.86
     },
     {
       "date": "2026-03-16",
       "totalAssets": 399937.49,
-      "dailyPnL": 3055.86,
-      "fundValue": 164967.49,
-      "stockValue": 234970.0
+      "dailyPnL": 3055.86
     },
     {
       "date": "2026-03-17",
       "totalAssets": 396708.59,
-      "dailyPnL": 0.0,
-      "fundValue": 165704.59,
-      "stockValue": 231004.0
+      "dailyPnL": 0.0
     },
     {
       "date": "2026-03-18",
       "totalAssets": 425001.62,
-      "dailyPnL": 0.0,
-      "fundValue": 163778.62,
-      "stockValue": 261223.0
+      "dailyPnL": 0.0
+    },
+    {
+      "date": "2026-04-01",
+      "totalAssets": 404193.01,
+      "dailyPnL": 0.0
     }
   ]
 }
