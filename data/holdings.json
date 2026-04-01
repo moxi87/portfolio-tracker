@@ -46,7 +46,7 @@
           "returnRate": 3.09,
           "market": "美股",
           "weight": 9.05,
-          "dailyChange": 1.16,
+          "dailyChange": 2.36,
           "cost": 33000.0
         },
         {
@@ -202,7 +202,7 @@
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-04-01T04:00:03.809935"
+    "lastUpdate": "2026-04-01T08:00:05.409375"
   },
   "history": [
     {
