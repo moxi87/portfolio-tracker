@@ -446,7 +446,7 @@
     <!-- 移动端优化：快速操作面板 -->
     <div id="quickActionPanel" class="fixed inset-0 bg-black/50 z-50 hidden" onclick="closeQuickActions()">
         <div class="absolute bottom-20 left-4 right-4 bg-white rounded-2xl p-4" onclick="event.stopPropagation()">
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-4 gap-4">
                 <button onclick="playTodayAudio(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100">
                     <i class="fas fa-play text-purple-600 text-xl mb-2"></i>
                     <span class="text-xs text-gray-700">播放晨报</span>
@@ -463,14 +463,23 @@
                     <i class="fas fa-shield-alt text-red-600 text-xl mb-2"></i>
                     <span class="text-xs text-gray-700">风险</span>
                 </button>
-                                <button onclick="showAttributionPanel(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-pink-50 to-pink-100">
+                
+                <button onclick="showAttributionPanel(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-pink-50 to-pink-100">
                     <i class="fas fa-chart-pie text-pink-600 text-xl mb-2"></i>
                     <span class="text-xs text-gray-700">归因</span>
                 </button>
+                
                 <button onclick="showCalendarView(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100">
                     <i class="fas fa-calendar-alt text-orange-600 text-xl mb-2"></i>
                     <span class="text-xs text-gray-700">日历</span>
                 </button>
+                
+                <!-- 导出按钮 -->
+                <button onclick="showExportMenu(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100">
+                    <i class="fas fa-file-export text-emerald-600 text-xl mb-2"></i>
+                    <span class="text-xs text-gray-700">导出</span>
+                </button>
+                
                 <button onclick="realtimeData.refresh(); closeQuickActions()" class="flex flex-col items-center p-3 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100">
                     <i class="fas fa-sync text-blue-600 text-xl mb-2"></i>
                     <span class="text-xs text-gray-700">刷新</span>
@@ -482,7 +491,10 @@
     <script src="https://cdn.tailwindcss.com" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" defer></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" defer></script>
     <script src="account_manager.js"></script>
+    <script src="portfolio-export.js" defer></script>
     
     <script>
         // ========== 加载状态管理器 ==========
@@ -1358,6 +1370,83 @@
         }
 
         // ========== 日历视图 ==========
+        
+        // ========== 导出菜单 ==========
+        function showExportMenu() {
+            const panelId = 'exportPanel';
+            const existing = document.getElementById(panelId);
+            if (existing) existing.remove();
+            
+            const panelHtml = `
+                <div id="${panelId}" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="closePanel('${panelId}')">
+                    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                    <i class="fas fa-file-export text-emerald-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">数据导出</h3>
+                                    <p class="text-xs text-gray-400">备份持仓与历史数据</p>
+                                </div>
+                            </div>
+                            <button onclick="closePanel('${panelId}')" class="p-2 hover:bg-gray-100 rounded-lg">
+                                <i class="fas fa-times text-gray-400"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <button onclick="portfolioExporter.exportJSON(); closePanel('${panelId}')" 
+                                class="w-full flex items-center justify-between p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-blue-500 text-white flex items-center justify-center">
+                                        <i class="fas fa-file-code"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="font-medium text-gray-800">JSON 格式</div>
+                                        <div class="text-xs text-gray-400">完整数据结构</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-download text-blue-500"></i>
+                            </button>
+                            
+                            <button onclick="portfolioExporter.exportCSV(); closePanel('${panelId}')" 
+                                class="w-full flex items-center justify-between p-4 rounded-xl bg-green-50 hover:bg-green-100 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-green-500 text-white flex items-center justify-center">
+                                        <i class="fas fa-file-csv"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="font-medium text-gray-800">CSV 格式</div>
+                                        <div class="text-xs text-gray-400">表格数据，兼容Excel</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-download text-green-500"></i>
+                            </button>
+                            
+                            <button onclick="portfolioExporter.exportExcel(); closePanel('${panelId}')" 
+                                class="w-full flex items-center justify-between p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-orange-500 text-white flex items-center justify-center">
+                                        <i class="fas fa-file-excel"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="font-medium text-gray-800">Excel 格式</div>
+                                        <div class="text-xs text-gray-400">多工作表，专业报表</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-download text-orange-500"></i>
+                            </button>
+                        </div>
+                        
+                        <p class="text-xs text-gray-400 mt-4 text-center">数据将保存到您的设备下载文件夹</p>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', panelHtml);
+            document.body.style.overflow = 'hidden';
+        }
+        
         let calendarCurrentDate = new Date();
         let calendarViewMode = 'month'; // 'month' | 'list'
         let calendarTradeRecords = [];
@@ -1624,6 +1713,29 @@
                                     立即刷新
                                 </button>
                             </div>
+                            <!-- 数据导出选项 -->
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-gray-600 font-medium">数据导出</span>
+                                    <span class="text-xs text-gray-400">本地数据备份</span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button onclick="portfolioExporter.exportJSON()" class="flex flex-col items-center p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-all">
+                                        <i class="fas fa-file-code text-lg mb-1"></i>
+                                        <span class="text-xs">JSON</span>
+                                    </button>
+                                    <button onclick="portfolioExporter.exportCSV()" class="flex flex-col items-center p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-all">
+                                        <i class="fas fa-file-csv text-lg mb-1"></i>
+                                        <span class="text-xs">CSV</span>
+                                    </button>
+                                    <button onclick="portfolioExporter.exportExcel()" class="flex flex-col items-center p-2 rounded-lg bg-orange-100 text-orange-600 hover:bg-orange-200 transition-all">
+                                        <i class="fas fa-file-excel text-lg mb-1"></i>
+                                        <span class="text-xs">Excel</span>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2">导出持仓、历史收益等完整数据</p>
+                            </div>
+                            
                             <div class="p-3 bg-gray-50 rounded-lg">
                                 <p class="text-xs text-gray-400">Portfolio Pro v5.13</p>
                                 <p class="text-xs text-gray-400 mt-1">数据存储：本地JSON</p>
