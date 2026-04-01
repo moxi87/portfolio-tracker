@@ -39,14 +39,14 @@
           "code": "000043",
           "name": "嘉实美国成长股票(QDII)",
           "shares": 1,
-          "nav": 5.072,
-          "marketValue": 34021.16,
+          "nav": 5.283,
+          "marketValue": 35436.47,
           "dailyPnL": -329.35,
-          "totalPnL": 1021.16,
-          "returnRate": 3.09,
+          "totalPnL": 2436.47,
+          "returnRate": 7.38,
           "market": "美股",
           "weight": 9.05,
-          "dailyChange": 2.36,
+          "dailyChange": 0.43,
           "cost": 33000.0
         },
         {
@@ -194,15 +194,15 @@
     }
   ],
   "summary": {
-    "totalAssets": 396871.7,
-    "fundValue": 157740.9,
+    "totalAssets": 398287.01,
+    "fundValue": 159156.21,
     "stockValue": 239130.8,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-04-01T20:00:03.245638"
+    "lastUpdate": "2026-04-02T00:00:03.356584"
   },
   "history": [
     {
