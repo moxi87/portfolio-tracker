@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Pro v5.12 | 专业持仓管理系统</title>
+    <title>Portfolio Pro v5.14 | 专业持仓管理系统</title>
     <meta name="description" content="Portfolio Pro - 专业持仓管理系统">
     
     <!-- 预连接关键域名 -->
@@ -165,7 +165,7 @@
                     <div>
                         <h1 class="text-lg font-bold text-gray-800">Portfolio Pro</h1>
                         <div class="flex items-center gap-2 text-xs text-gray-500">
-                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-medium">v5.12</span>
+                            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-medium">v5.14</span>
                             <span id="currentDate">--</span>
                             <span id="liveIndicator" class="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
                             <span id="liveText">初始化</span>
@@ -1341,6 +1341,7 @@
                 'fa-balance-scale');
         }
 
+        // ========== 收益归因分析 ==========
         function showAttributionPanel() {
             const account = portfolioData.accounts[currentAccountId];
             const hasData = account && ((account.data.stocks || []).length > 0 || (account.data.funds || []).length > 0);
@@ -1350,9 +1351,278 @@
                 return;
             }
             
-            showFeaturePanel('收益归因', 
-                '<p class="mb-4">按行业/个股维度的收益贡献分析。</p><p class="text-sm text-gray-400">详细归因分析功能开发中。</p>',
-                'fa-chart-pie');
+            const stocks = account.data.stocks || [];
+            const funds = account.data.funds || [];
+            const allHoldings = [...stocks, ...funds];
+            
+            // 计算归因数据
+            const attribution = calculateAttribution(stocks, funds);
+            
+            // 生成面板内容
+            const content = renderAttributionContent(attribution, allHoldings);
+            
+            showFeaturePanel('收益归因分析', content, 'fa-chart-pie');
+            
+            // 延迟渲染图表（等DOM插入后）
+            setTimeout(() => renderAttributionCharts(attribution), 100);
+        }
+        
+        function calculateAttribution(stocks, funds) {
+            const allHoldings = [...stocks, ...funds];
+            const totalValue = allHoldings.reduce((sum, h) => sum + (h.marketValue || 0), 0);
+            const totalPnL = allHoldings.reduce((sum, h) => sum + (h.totalPnL || 0), 0);
+            
+            // 1. 资产类别归因
+            const assetAttribution = {
+                stocks: { value: 0, pnl: 0, weight: 0 },
+                funds: { value: 0, pnl: 0, weight: 0 },
+                cash: { value: 0, pnl: 0, weight: 0 }
+            };
+            
+            stocks.forEach(s => {
+                assetAttribution.stocks.value += s.marketValue || 0;
+                assetAttribution.stocks.pnl += s.totalPnL || 0;
+            });
+            
+            funds.forEach(f => {
+                if (f.code === 'YEB') {
+                    assetAttribution.cash.value += f.marketValue || 0;
+                    assetAttribution.cash.pnl += f.totalPnL || 0;
+                } else {
+                    assetAttribution.funds.value += f.marketValue || 0;
+                    assetAttribution.funds.pnl += f.totalPnL || 0;
+                }
+            });
+            
+            Object.keys(assetAttribution).forEach(key => {
+                assetAttribution[key].weight = totalValue > 0 ? (assetAttribution[key].value / totalValue * 100).toFixed(1) : 0;
+                assetAttribution[key].contribution = totalPnL !== 0 ? (assetAttribution[key].pnl / totalPnL * 100).toFixed(1) : 0;
+            });
+            
+            // 2. 市场分布归因
+            const marketAttribution = {};
+            allHoldings.forEach(h => {
+                const market = h.market || '其他';
+                if (!marketAttribution[market]) {
+                    marketAttribution[market] = { value: 0, pnl: 0, count: 0 };
+                }
+                marketAttribution[market].value += h.marketValue || 0;
+                marketAttribution[market].pnl += h.totalPnL || 0;
+                marketAttribution[market].count++;
+            });
+            
+            Object.keys(marketAttribution).forEach(key => {
+                marketAttribution[key].weight = totalValue > 0 ? (marketAttribution[key].value / totalValue * 100).toFixed(1) : 0;
+                marketAttribution[key].contribution = totalPnL !== 0 ? (marketAttribution[key].pnl / totalPnL * 100).toFixed(1) : 0;
+            });
+            
+            // 3. 个券归因（按收益贡献排序）
+            const holdingAttribution = allHoldings
+                .map(h => ({
+                    ...h,
+                    contribution: totalPnL !== 0 ? (h.totalPnL || 0) / totalPnL * 100 : 0,
+                    contributionAbs: Math.abs(h.totalPnL || 0)
+                }))
+                .sort((a, b) => b.contributionAbs - a.contributionAbs);
+            
+            // 4. 盈亏分布
+            const profitHoldings = allHoldings.filter(h => (h.totalPnL || 0) > 0);
+            const lossHoldings = allHoldings.filter(h => (h.totalPnL || 0) < 0);
+            const profitCount = profitHoldings.length;
+            const lossCount = lossHoldings.length;
+            const profitValue = profitHoldings.reduce((sum, h) => sum + (h.totalPnL || 0), 0);
+            const lossValue = lossHoldings.reduce((sum, h) => sum + (h.totalPnL || 0), 0);
+            
+            return {
+                totalValue,
+                totalPnL,
+                assetAttribution,
+                marketAttribution,
+                holdingAttribution,
+                winLoss: {
+                    profitCount,
+                    lossCount,
+                    profitValue,
+                    lossValue,
+                    winRate: allHoldings.length > 0 ? (profitCount / allHoldings.length * 100).toFixed(1) : 0
+                }
+            };
+        }
+        
+        function renderAttributionContent(attribution, holdings) {
+            const { assetAttribution, marketAttribution, holdingAttribution, winLoss, totalPnL } = attribution;
+            
+            // 市场颜色映射
+            const marketColors = {
+                'A股': 'bg-red-100 text-red-600',
+                '美股': 'bg-blue-100 text-blue-600',
+                '港股': 'bg-purple-100 text-purple-600',
+                '海外': 'bg-orange-100 text-orange-600',
+                '现金': 'bg-green-100 text-green-600'
+            };
+            
+            // 资产类别标签
+            const assetLabels = {
+                stocks: '股票',
+                funds: '基金',
+                cash: '现金'
+            };
+            
+            // 生成个券归因列表（前5名）
+            const topContributors = holdingAttribution.slice(0, 5);
+            
+            return `
+                <div class="space-y-6 max-h-[70vh] overflow-y-auto pr-1">
+                    <!-- 归因概览 -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="text-center p-3 bg-gray-50 rounded-xl">
+                            <div class="text-xs text-gray-400 mb-1">总收益</div>
+                            <div class="text-lg font-bold ${totalPnL >= 0 ? 'trend-up' : 'trend-down'}">
+                                ${totalPnL >= 0 ? '+' : ''}¥${(totalPnL/10000).toFixed(2)}万
+                            </div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-xl">
+                            <div class="text-xs text-gray-400 mb-1">胜率</div>
+                            <div class="text-lg font-bold text-indigo-600">${winLoss.winRate}%</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-xl">
+                            <div class="text-xs text-gray-400 mb-1">盈亏比</div>
+                            <div class="text-lg font-bold ${winLoss.profitValue + winLoss.lossValue >= 0 ? 'trend-up' : 'trend-down'}">
+                                ${winLoss.lossValue !== 0 ? Math.abs(winLoss.profitValue / winLoss.lossValue).toFixed(2) : '∞'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 资产配置归因 -->
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-chart-bar text-indigo-500"></i>
+                            资产配置归因
+                        </h4>
+                        <div class="space-y-2" id="assetAttributionChart">
+                            ${Object.entries(assetAttribution).filter(([_, v]) => v.value > 0).map(([key, data]) => `
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                    <div class="w-16 text-sm text-gray-600">${assetLabels[key]}</div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-gray-500">权重 ${data.weight}%</span>
+                                            <span class="${data.pnl >= 0 ? 'trend-up' : 'trend-down'}">
+                                                ${data.pnl >= 0 ? '+' : ''}¥${(data.pnl/10000).toFixed(2)}万
+                                            </span>
+                                        </div>
+                                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-full ${data.pnl >= 0 ? 'bg-red-500' : 'bg-green-500'} rounded-full" 
+                                                 style="width: ${Math.abs(data.contribution)}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="w-12 text-right text-xs ${data.contribution >= 0 ? 'trend-up' : 'trend-down'}">
+                                        ${data.contribution >= 0 ? '+' : ''}${data.contribution}%
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- 市场分布归因 -->
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-globe text-indigo-500"></i>
+                            市场分布归因
+                        </h4>
+                        <div class="space-y-2">
+                            ${Object.entries(marketAttribution).map(([market, data]) => `
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-xs px-2 py-1 rounded ${marketColors[market] || 'bg-gray-100 text-gray-600'}">${market}</span>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-gray-500">${data.count}只持仓 · 权重 ${data.weight}%</span>
+                                            <span class="${data.pnl >= 0 ? 'trend-up' : 'trend-down'}">
+                                                ${data.pnl >= 0 ? '+' : ''}¥${(data.pnl/10000).toFixed(2)}万
+                                            </span>
+                                        </div>
+                                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-full ${data.pnl >= 0 ? 'bg-red-500' : 'bg-green-500'} rounded-full" 
+                                                 style="width: ${Math.min(Math.abs(data.contribution), 100)}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="w-12 text-right text-xs ${data.contribution >= 0 ? 'trend-up' : 'trend-down'}">
+                                        ${data.contribution >= 0 ? '+' : ''}${data.contribution}%
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- 个券收益贡献TOP5 -->
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-trophy text-indigo-500"></i>
+                            收益贡献TOP5
+                        </h4>
+                        <div class="space-y-2">
+                            ${topContributors.map((h, idx) => `
+                                <div class="flex items-center gap-3 p-3 ${idx < 3 ? 'bg-gradient-to-r from-indigo-50 to-white' : 'bg-gray-50'} rounded-lg">
+                                    <div class="w-6 h-6 flex items-center justify-center rounded-full ${idx === 0 ? 'bg-yellow-100 text-yellow-600' : idx === 1 ? 'bg-gray-200 text-gray-600' : idx === 2 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500'} text-xs font-bold">
+                                        ${idx + 1}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-medium text-gray-800 truncate">${h.name}</span>
+                                            <span class="text-xs text-gray-400">${h.code}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-400">
+                                            权重 ${h.weight?.toFixed(2) || ((h.marketValue / attribution.totalValue) * 100).toFixed(2)}% · 收益率 ${h.returnRate?.toFixed(2) || ((h.totalPnL / (h.marketValue - h.totalPnL)) * 100).toFixed(2)}%
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-bold ${h.totalPnL >= 0 ? 'trend-up' : 'trend-down'}">
+                                            ${h.totalPnL >= 0 ? '+' : ''}¥${(h.totalPnL/10000).toFixed(2)}万
+                                        </div>
+                                        <div class="text-xs ${h.contribution >= 0 ? 'trend-up' : 'trend-down'}">
+                                            ${h.contribution >= 0 ? '+' : ''}${h.contribution.toFixed(1)}%
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- 盈亏分布 -->
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-balance-scale text-indigo-500"></i>
+                            盈亏分布
+                        </h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3 bg-red-50 rounded-xl text-center">
+                                <div class="text-xs text-red-400 mb-1">盈利持仓 (${winLoss.profitCount}只)</div>
+                                <div class="text-lg font-bold trend-up">+¥${(winLoss.profitValue/10000).toFixed(2)}万</div>
+                            </div>
+                            <div class="p-3 bg-green-50 rounded-xl text-center">
+                                <div class="text-xs text-green-400 mb-1">亏损持仓 (${winLoss.lossCount}只)</div>
+                                <div class="text-lg font-bold trend-down">¥${(winLoss.lossValue/10000).toFixed(2)}万</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 归因说明 -->
+                    <div class="text-xs text-gray-400 bg-gray-50 p-3 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-info-circle mt-0.5 text-gray-400"></i>
+                            <div>
+                                <p class="mb-1"><strong>收益贡献</strong> = 该持仓收益 ÷ 总收益 × 100%</p>
+                                <p class="mb-1"><strong>胜率</strong> = 盈利持仓数 ÷ 总持仓数 × 100%</p>
+                                <p><strong>盈亏比</strong> = 总盈利金额 ÷ |总亏损金额|</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderAttributionCharts(attribution) {
+            // 图表渲染在内容生成后自动完成（使用CSS实现）
+            // 可以在这里添加更复杂的Chart.js图表
         }
 
         function showAnalysisTools() {
