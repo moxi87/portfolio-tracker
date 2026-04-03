@@ -18,7 +18,7 @@
           "returnRate": 78.33,
           "market": "A股",
           "weight": 11.52,
-          "dailyChange": -2.25,
+          "dailyChange": -2.24,
           "cost": 25704.66
         },
         {
@@ -32,7 +32,7 @@
           "returnRate": 47.31,
           "market": "A股",
           "weight": 5.3,
-          "dailyChange": 0.77,
+          "dailyChange": 0.74,
           "cost": 14000.0
         },
         {
@@ -60,7 +60,7 @@
           "returnRate": 1.31,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": -0.88,
+          "dailyChange": -0.89,
           "cost": 16000.0
         },
         {
@@ -74,7 +74,7 @@
           "returnRate": 3.15,
           "market": "A股",
           "weight": 2.76,
-          "dailyChange": -1.03,
+          "dailyChange": -1.02,
           "cost": 10591.89
         },
         {
@@ -88,7 +88,7 @@
           "returnRate": -1.17,
           "market": "A股",
           "weight": 2.56,
-          "dailyChange": -1.39,
+          "dailyChange": -1.4,
           "cost": 10427.77
         },
         {
@@ -102,7 +102,7 @@
           "returnRate": -8.91,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": -0.45,
+          "dailyChange": -0.47,
           "cost": 9712.34
         },
         {
@@ -167,14 +167,14 @@
           "name": "中科曙光",
           "shares": 100,
           "cost": 165.432,
-          "price": 77.9,
-          "marketValue": 7790.0,
-          "totalPnL": -8753.2,
-          "returnRate": -52.91,
+          "price": 77.89,
+          "marketValue": 7789.0,
+          "totalPnL": -8754.2,
+          "returnRate": -52.92,
           "market": "A股",
           "weight": 2.16,
           "dailyPnL": 0.0,
-          "dailyChange": -0.23
+          "dailyChange": -0.24
         },
         {
           "code": "603993",
@@ -194,15 +194,15 @@
     }
   ],
   "summary": {
-    "totalAssets": 390144.42,
+    "totalAssets": 390143.42,
     "fundValue": 159290.02,
-    "stockValue": 230854.4,
+    "stockValue": 230853.4,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-04-03T15:00:02.994222"
+    "lastUpdate": "2026-04-03T16:00:04.029980"
   },
   "history": [
     {
