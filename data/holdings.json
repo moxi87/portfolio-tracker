@@ -102,7 +102,7 @@
           "returnRate": -8.91,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": 0.08,
+          "dailyChange": -0.02,
           "cost": 9712.34
         },
         {
@@ -139,14 +139,14 @@
           "name": "比亚迪",
           "shares": 2100,
           "cost": 103.635,
-          "price": 99.55,
-          "marketValue": 209055.0,
-          "totalPnL": -8578.5,
-          "returnRate": -3.94,
+          "price": 99.54,
+          "marketValue": 209034.0,
+          "totalPnL": -8599.5,
+          "returnRate": -3.95,
           "market": "A股",
           "weight": 54.77,
           "dailyPnL": 0.0,
-          "dailyChange": -2.07
+          "dailyChange": -2.08
         },
         {
           "code": "159326",
@@ -194,15 +194,15 @@
     }
   ],
   "summary": {
-    "totalAssets": 391286.02,
+    "totalAssets": 391265.02,
     "fundValue": 159290.02,
-    "stockValue": 231996.0,
+    "stockValue": 231975.0,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-04-03T12:00:03.205166"
+    "lastUpdate": "2026-04-03T13:00:02.693933"
   },
   "history": [
     {
