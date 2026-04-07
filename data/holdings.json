@@ -18,7 +18,7 @@
           "returnRate": 74.29,
           "market": "A股",
           "weight": 11.52,
-          "dailyChange": 0.6,
+          "dailyChange": 0.58,
           "cost": 25704.66
         },
         {
@@ -32,7 +32,7 @@
           "returnRate": 48.33,
           "market": "A股",
           "weight": 5.3,
-          "dailyChange": 1.08,
+          "dailyChange": 1.05,
           "cost": 14000.0
         },
         {
@@ -60,7 +60,7 @@
           "returnRate": 3.57,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": 0.42,
+          "dailyChange": 0.43,
           "cost": 16000.0
         },
         {
@@ -74,7 +74,7 @@
           "returnRate": 2.16,
           "market": "A股",
           "weight": 2.76,
-          "dailyChange": -0.55,
+          "dailyChange": -0.57,
           "cost": 10591.89
         },
         {
@@ -88,7 +88,7 @@
           "returnRate": -2.29,
           "market": "A股",
           "weight": 2.56,
-          "dailyChange": -0.52,
+          "dailyChange": -0.54,
           "cost": 10427.77
         },
         {
@@ -102,7 +102,7 @@
           "returnRate": -9.36,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": 0.3,
+          "dailyChange": 0.29,
           "cost": 9712.34
         },
         {
@@ -139,14 +139,14 @@
           "name": "比亚迪",
           "shares": 2100,
           "cost": 103.635,
-          "price": 98.0,
-          "marketValue": 205800.0,
-          "totalPnL": -11833.5,
-          "returnRate": -5.44,
+          "price": 97.98,
+          "marketValue": 205758.0,
+          "totalPnL": -11875.5,
+          "returnRate": -5.46,
           "market": "A股",
           "weight": 54.77,
           "dailyPnL": 0.0,
-          "dailyChange": -1.02
+          "dailyChange": -1.04
         },
         {
           "code": "159326",
@@ -181,28 +181,28 @@
           "name": "洛阳钼业",
           "shares": 300,
           "cost": 20.514,
-          "price": 17.59,
-          "marketValue": 5277.0,
-          "totalPnL": -877.2,
-          "returnRate": -14.25,
+          "price": 17.6,
+          "marketValue": 5280.0,
+          "totalPnL": -874.2,
+          "returnRate": -14.2,
           "market": "A股",
           "weight": 1.48,
           "dailyPnL": 0.0,
-          "dailyChange": 0.4
+          "dailyChange": 0.46
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 387106.8,
+    "totalAssets": 387067.8,
     "fundValue": 158424.0,
-    "stockValue": 228682.8,
+    "stockValue": 228643.8,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-04-07T15:00:02.972835"
+    "lastUpdate": "2026-04-07T16:00:03.507795"
   },
   "history": [
     {
