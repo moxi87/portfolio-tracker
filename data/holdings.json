@@ -60,7 +60,7 @@
           "returnRate": 1.85,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": 4.37,
+          "dailyChange": 4.38,
           "cost": 16000.0
         },
         {
@@ -116,7 +116,7 @@
           "returnRate": -15.46,
           "market": "港股",
           "weight": 2.74,
-          "dailyChange": 5.06,
+          "dailyChange": 4.96,
           "cost": 12004.32
         },
         {
@@ -202,7 +202,7 @@
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-04-08T16:00:03.795515"
+    "lastUpdate": "2026-04-08T20:00:04.161303"
   },
   "history": [
     {
