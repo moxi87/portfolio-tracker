@@ -18,7 +18,7 @@
           "returnRate": 75.44,
           "market": "A股",
           "weight": 11.52,
-          "dailyChange": 3.44,
+          "dailyChange": 3.45,
           "cost": 25704.66
         },
         {
@@ -32,7 +32,7 @@
           "returnRate": 49.82,
           "market": "A股",
           "weight": 5.3,
-          "dailyChange": 7.15,
+          "dailyChange": 7.13,
           "cost": 14000.0
         },
         {
@@ -60,7 +60,7 @@
           "returnRate": 1.85,
           "market": "海外",
           "weight": 4.25,
-          "dailyChange": 4.39,
+          "dailyChange": 4.37,
           "cost": 16000.0
         },
         {
@@ -74,7 +74,7 @@
           "returnRate": 1.61,
           "market": "A股",
           "weight": 2.76,
-          "dailyChange": 3.8,
+          "dailyChange": 3.87,
           "cost": 10591.89
         },
         {
@@ -88,7 +88,7 @@
           "returnRate": -2.83,
           "market": "A股",
           "weight": 2.56,
-          "dailyChange": 0.97,
+          "dailyChange": 0.96,
           "cost": 10427.77
         },
         {
@@ -102,7 +102,7 @@
           "returnRate": -9.14,
           "market": "A股",
           "weight": 2.21,
-          "dailyChange": 1.31,
+          "dailyChange": 1.92,
           "cost": 9712.34
         },
         {
@@ -116,7 +116,7 @@
           "returnRate": -15.46,
           "market": "港股",
           "weight": 2.74,
-          "dailyChange": 4.88,
+          "dailyChange": 5.06,
           "cost": 12004.32
         },
         {
@@ -167,42 +167,42 @@
           "name": "中科曙光",
           "shares": 100,
           "cost": 165.432,
-          "price": 82.89,
-          "marketValue": 8289.0,
-          "totalPnL": -8254.2,
+          "price": 82.9,
+          "marketValue": 8290.0,
+          "totalPnL": -8253.2,
           "returnRate": -49.89,
           "market": "A股",
           "weight": 2.16,
           "dailyPnL": 0.0,
-          "dailyChange": 6.35
+          "dailyChange": 6.36
         },
         {
           "code": "603993",
           "name": "洛阳钼业",
           "shares": 300,
           "cost": 20.514,
-          "price": 19.13,
-          "marketValue": 5739.0,
-          "totalPnL": -415.2,
-          "returnRate": -6.75,
+          "price": 19.14,
+          "marketValue": 5742.0,
+          "totalPnL": -412.2,
+          "returnRate": -6.7,
           "market": "A股",
           "weight": 1.48,
           "dailyPnL": 0.0,
-          "dailyChange": 8.69
+          "dailyChange": 8.75
         }
       ]
     }
   ],
   "summary": {
-    "totalAssets": 395419.29,
+    "totalAssets": 395423.29,
     "fundValue": 158569.29,
-    "stockValue": 236850.0,
+    "stockValue": 236854.0,
     "dailyPnL": 0.0,
     "totalPnL": 21677.26,
     "returnRate": 5.36,
     "fundDailyPnL": 0.0,
     "stockDailyPnL": 0.0,
-    "lastUpdate": "2026-04-08T15:00:02.651434"
+    "lastUpdate": "2026-04-08T16:00:03.795515"
   },
   "history": [
     {
